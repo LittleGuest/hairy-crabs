@@ -1,0 +1,20 @@
+[package]
+name = "crab-common"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.72"
+
+poem = { version = "1.0.34", features = ["multipart"] }
+
+# Resis驱动
+redis = { version = "0.21.4", features = ["tokio-comp"] }
+
+lazy_static = "1.4.0"
+
+[dev-dependencies]
+tokio-test = "0.4.2"
