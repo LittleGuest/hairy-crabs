@@ -57,6 +57,7 @@ pub struct TableColumn {
     // 对应 Rust 类型
     pub field_type: Option<String>,
     pub multi_world: Option<bool>,
+    pub r#type: Option<String>,
 }
 
 /// 获取指定表信息

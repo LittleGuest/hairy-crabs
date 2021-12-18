@@ -1,7 +1,9 @@
 /target
 *.vscode
 *.idea
+/tps
 crab-excel/*.xlsx
+*.log
 
 crab-ui/.DS_Store
 crab-ui/node_modules

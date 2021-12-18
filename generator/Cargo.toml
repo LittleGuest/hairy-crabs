@@ -9,11 +9,11 @@ edition = "2021"
 [dependencies]
 serde = { version = "1.0.130", features = ["derive"] }
 
-rbatis = { version = "3.0.24", default-features = false, features = [
+rbatis = { version = "3.0.27", default-features = false, features = [
     "mysql",
     "runtime-tokio-rustls",
 ] }
-bson2 = "2.0.3"
+rbson = "2.0.3"
 log = "0.4.14"
 fast_log = "1.3.32"
 

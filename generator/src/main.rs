@@ -8,7 +8,12 @@ extern crate lazy_static;
 #[macro_use]
 extern crate rbatis;
 
-use std::{collections::HashMap, fs, io::Write, time::Duration};
+use std::{
+    collections::HashMap,
+    fs::{self, OpenOptions},
+    io::Write,
+    time::Duration,
+};
 
 use anyhow::Result;
 use clap::Parser;
@@ -95,7 +100,10 @@ impl ToString for Generator {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let gen = Generator::parse();
+    let mut gen = Generator::parse();
+    if !gen.path.is_empty() && !gen.path.ends_with("/") {
+        gen.path.push_str("/")
+    }
     println!("{}", gen.to_string());
 
     let mut pool_options = DBPoolOptions::new();
@@ -162,6 +170,8 @@ async fn generator(path: &str, table_names: &str) -> Result<()> {
             has_columns = !columns.is_empty();
 
             let cols = columns.iter().fold(Vec::new(), |mut cols, column| {
+                let mysql_2_rust =
+                    mysql_2_rust(&column.data_type.clone().unwrap_or_default().to_uppercase());
                 cols.push(TableColumn {
                     table_schema: column.table_schema.clone(),
                     table_name: column.table_name.clone(),
@@ -177,9 +187,7 @@ async fn generator(path: &str, table_names: &str) -> Result<()> {
                     ordinal_position: column.ordinal_position,
                     column_default: column.column_default.clone(),
                     is_nullable: {
-                        let ft = mysql_2_rust(
-                            &column.data_type.clone().unwrap_or_default().to_uppercase(),
-                        );
+                        let ft = mysql_2_rust.0.clone();
                         if ft.contains("Time") {
                             Some("Yes".to_string())
                         } else {
@@ -191,9 +199,7 @@ async fn generator(path: &str, table_names: &str) -> Result<()> {
                     column_type: column.column_type.clone(),
                     column_key: column.column_key.clone(),
                     column_comment: column.column_comment.clone(),
-                    field_type: Some(mysql_2_rust(
-                        &column.data_type.clone().unwrap_or_default().to_uppercase(),
-                    )),
+                    field_type: Some(mysql_2_rust.0.clone()),
                     multi_world: Some({
                         column
                             .column_name
@@ -201,6 +207,7 @@ async fn generator(path: &str, table_names: &str) -> Result<()> {
                             .unwrap()
                             .contains(|c| c == '_' || c == '-')
                     }),
+                    r#type: { Some(mysql_2_rust.1) },
                 });
                 cols
             });
@@ -225,7 +232,11 @@ async fn generator(path: &str, table_names: &str) -> Result<()> {
 
     // 创建 mod.rs 文件
     let mod_file_name = format!("{}mod.rs", path);
-    let mut tf = fs::File::create(&mod_file_name)?;
+
+    let mut tf = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&mod_file_name)?;
     tf.write_all(render_string.as_bytes())?;
 
     println!("the {} has been generated", &mod_file_name);
