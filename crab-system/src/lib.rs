@@ -9,6 +9,7 @@ pub mod model;
 pub mod service;
 pub mod util;
 
+use common::error::CrabError;
 use config::App;
 use rbatis::{db::DBPoolOptions, rbatis::Rbatis};
 use redis::{Client, Connection};
@@ -41,11 +42,17 @@ fn connection() -> Connection {
 }
 
 /// 初始化数据库
-pub async fn init_db() -> anyhow::Result<()> {
+pub async fn init_db() -> Result<(), CrabError> {
     //启用日志输出
-    fast_log::init_log("hairy_crabs.log", 1000, log::Level::Info, None, true).unwrap();
+    fast_log::init_log("hairy_crabs.log", log::Level::Info, None, true).unwrap();
     //初始化连接池
     let pool_options = DBPoolOptions::default();
-    RB.link_opt(APP.database_url.as_str(), pool_options).await?;
+    RB.link_opt(APP.database_url.as_str(), pool_options)
+        .await
+        .map_err(|e| {
+            log::error!("数据库连接失败: {}", e);
+            CrabError::SQLError("数据库连接失败")
+        })?;
+
     Ok(())
 }

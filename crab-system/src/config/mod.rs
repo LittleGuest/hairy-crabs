@@ -68,7 +68,7 @@ impl Default for App {
 impl App {
     pub fn new() -> Self {
         let setting = include_str!("../../../crab.yml");
-        println!("{}", setting);
+        log::info!("{}", setting);
         serde_yaml::from_str::<App>(setting).expect("配置文件错误")
     }
 }

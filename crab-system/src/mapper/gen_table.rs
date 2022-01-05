@@ -4,8 +4,16 @@ use crate::{common::error::CrabError, dto::gen::GenTableDto, model::GenTable, RB
 
 impl GenTable {
     /// 查询业务列表
-    pub async fn gen_table_list(dto: &GenTableDto) -> Result<Page<Self>, CrabError> {
-        let mut sql = "
+    pub async fn gen_table_list(
+        GenTableDto {
+            page_num,
+            page_size,
+            table_name,
+            table_comment,
+            ..
+        }: &GenTableDto,
+    ) -> Result<Page<Self>, CrabError> {
+        let sql = "
         select
             table_id,
             table_name,
@@ -31,25 +39,24 @@ impl GenTable {
             gen_table
         where
             1 = 1
+        if  table_name != null:
+            AND lower(table_name) like lower(concat('%', #{table_name}, '%'))
+        if table_comment != null:
+            AND lower(table_comment) like lower(concat('%', #{table_comment}, '%'))
         "
         .to_string();
 
-        if dto.table_name.is_some() {
-            sql.push_str("\nAND lower(table_name) like lower(concat('%', #{table_name}, '%'))");
-        }
-        if dto.table_comment.is_some() {
-            sql.push_str(
-                "\nAND lower(table_comment) like lower(concat('%', #{table_comment}, '%'))",
-            );
-        }
         let page: Result<Page<Self>, CrabError> = RB
             .fetch_page(
                 &sql,
-                vec![as_bson!(&dto.table_name), as_bson!(&dto.table_comment)],
-                &PageRequest::new_option(&dto.page_num, &dto.page_size),
+                vec![rbson::bson!({ "table_name": table_name,"table_comment": table_comment })],
+                &PageRequest::new_option(page_num, page_size),
             )
             .await
-            .map_err(|e| CrabError::SQLError("查询业务列表"));
+            .map_err(|e| {
+                log::error!("查询业务列表: {}", e);
+                CrabError::SQLError("查询业务列表")
+            });
         page
     }
 }

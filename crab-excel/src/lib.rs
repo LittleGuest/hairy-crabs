@@ -2,16 +2,20 @@
 
 #![allow(unused)]
 
-pub mod err;
 pub mod reader;
-#[cfg(test)]
-mod test;
 pub mod writer;
 
 use std::vec;
 
 use crab_excel_derive::ExcelWriter;
+use thiserror::Error;
 use writer::ExcelWriter;
+
+#[derive(Debug, Error)]
+pub enum ExcelError {
+    #[error("{0}")]
+    E(String),
+}
 
 // /// 导出的类型Type
 // pub enum Type {
@@ -27,46 +31,3 @@ use writer::ExcelWriter;
 //     Date,
 // }
 
-#[derive(Debug, Default, ExcelWriter)]
-struct TestExcel {
-    #[excel_col(name = "1", order = 1)]
-    id: u32,
-    #[excel_col(name = "TestExcel")]
-    name: String,
-    #[excel_col(order = 1)]
-    roles: Vec<u32>,
-    #[excel_col(name = "Rust", order = 2)]
-    del: u8,
-    #[excel_col(order = 1, name = "Rust")]
-    date: u128,
-}
-
-#[test]
-fn test_excel() {
-    let data = vec![
-        TestExcel {
-            id: 1001,
-            name: "Rust".to_string(),
-            roles: vec![12, 3, 4],
-            del: 0,
-            date: 1639233721000,
-        },
-        TestExcel::default(),
-        TestExcel {
-            id: 1003,
-            name: "Crab".to_string(),
-            roles: vec![4],
-            del: 0,
-            date: 1639233721000,
-        },
-        TestExcel::default(),
-        TestExcel {
-            id: 1005,
-            name: "Derive".to_string(),
-            roles: vec![],
-            del: 0,
-            date: 1639233721000,
-        },
-    ];
-    TestExcel::simple_write(&data);
-}

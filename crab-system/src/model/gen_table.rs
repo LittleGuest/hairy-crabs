@@ -61,7 +61,7 @@ pub struct GenTable {
     #[validate(length(max = 64))]
     pub create_by: Option<String>,
     /// 创建时间
-    pub create_time: Option<rbatis::DateTimeNative>,
+    pub create_time: Option<rbatis::DateTimeUtc>,
     /// 更新者
     #[validate(length(max = 64))]
     pub update_by: Option<String>,

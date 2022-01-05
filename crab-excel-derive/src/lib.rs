@@ -40,66 +40,97 @@ date_format: 日期格式化，如 yyyy-MM-dd HH:mm:ss
 
 mod excel_col;
 
-use proc_macro::TokenStream;
+use darling::{FromDeriveInput, ToTokens};
+use excel_col::ExcelWriterMacro;
+use proc_macro::{Literal, TokenStream};
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput, Result};
+use syn::{parse_macro_input, DeriveInput, Ident, LitStr, Result};
 
 use crate::excel_col::ExcelCol;
 
 #[proc_macro_derive(ExcelWriter, attributes(excel_col))]
-pub fn excel_macro_derive(input: TokenStream) -> TokenStream {
-    // 解析为语法树
+pub fn excel_writer_macro_derive(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
-
-    // for attr in &ast.attrs {
-    //     println!("ast.attrs {:?}", attr.path.get_ident());
-    // }
-
-    resolve(&ast);
-
-    impl_excel_writer_macro(&ast)
-}
-
-fn resolve(ast: &DeriveInput) {
-    match &ast.data {
-        syn::Data::Struct(ds) => match &ds.fields {
-            syn::Fields::Named(fsn) => {
-                let mut excel_cols = vec![];
-                for field in &fsn.named {
-                    println!("{}", ["="; 20].join(""));
-                    // println!("field.ident {:?}", field.ident);
-
-                    for field_attr in &field.attrs {
-                        // println!("field_attr.path {:?}", field_attr.path.get_ident());
-                        match field_attr.parse_args::<ExcelCol>() {
-                            Ok(ec) => {
-                                // TODO excel_col中的属性解析成功
-                                println!("parse success");
-                                excel_cols.push(ec);
-                            }
-                            Err(e) => println!("{:?}", e.to_string()),
-                        }
-                    }
-                }
-            }
-            syn::Fields::Unnamed(_fsu) => todo!(),
-            syn::Fields::Unit => todo!(),
-        },
-        syn::Data::Enum(_de) => todo!(),
-        syn::Data::Union(_) => (),
+    let ewm = ExcelWriterMacro::from_derive_input(&ast).unwrap();
+    if ewm.data.is_struct() {
+        impl_excel_writer_macro(ewm)
+    } else {
+        token(ast)
     }
 }
 
-fn impl_excel_writer_macro(ast: &DeriveInput) -> TokenStream {
-    let name = &ast.ident;
+fn token(ast: DeriveInput) -> TokenStream {
+    let expand = quote! {
+        #ast
+    };
+    expand.into()
+}
+
+fn impl_excel_writer_macro(ewm: ExcelWriterMacro) -> TokenStream {
+    let struct_name_token = &ewm.ident;
+
+    let mut field_names = vec![];
+    &ewm.data.map_struct_fields(|el| {
+        let field_name = el.ident.unwrap().to_string();
+        field_names.push(field_name.clone());
+        let mut col_name = el.name.unwrap_or_else(|| "".to_string());
+
+        println!("field_name = {}", field_name);
+        println!("col_name = {}", col_name);
+    });
+
+    println!("{:?}", field_names);
+    let mut fnq = quote! {};
+
+    for ins in field_names.iter() {
+        fnq = quote! {
+            #fnq
+            row.add_cell(#ins);
+        };
+    }
+
+    fnq = quote! {
+        {
+            let mut row = Row::new();
+        #fnq
+        row
+        }
+    };
+
+    let mut rows = quote! {};
+    for fd in field_names.iter() {
+        rows = quote! {
+            #rows
+
+            sw.append_row({
+                let mut row = Row::new();
+
+                row
+
+            });
+        };
+
+        // sw.append_row(row![
+        //     "Amy",
+        //     (),
+        //     true,
+        //     "<xml><tag>\"Hello\" & 'World'</tag></xml>"
+        // ])?;
+        // sw.append_blank_rows(2);
+        // sw.append_row(row!["Tony", blank!(2), "retired"])
+    }
 
     let expand = quote! {
         use simple_excel_writer::*;
 
-        impl ExcelWriter for #name {
-            fn simple_write(data: &[Self]) -> Result<Vec<u8>, err::ExcelError>{
-                let mut wb = Workbook::create("simple.xlsx");
-                let mut sheet = wb.create_sheet("SheetName");
+        impl ExcelWriter for #struct_name_token {
+            type Input = Self;
+            fn simple_write(data: &[Self::Input]) -> Result<Option<Vec<u8>>, crab_excel::ExcelError>{
+                let mut wb = Workbook::create("测试数据.xlsx");
+                let mut sheet = wb.create_sheet("测试数据");
+
+                // sheet.add_column(Column { width: 30.0 });
+                // sheet.add_column(Column { width: 30.0 });
 
                 // 设置列的宽度
                 sheet.add_column(Column { width: 30.0 });
@@ -107,24 +138,33 @@ fn impl_excel_writer_macro(ast: &DeriveInput) -> TokenStream {
 
                 wb.write_sheet(&mut sheet, |sheet_writer| {
                     let sw = sheet_writer;
-                    sw.append_row(row!["Name", "Title", "Success", "XML Remark"])?;
-                    sw.append_row(row![
-                        "Amy",
-                        (),
-                        true,
-                        "<xml><tag>\"Hello\" & 'World'</tag></xml>"
-                    ])?;
-                    sw.append_blank_rows(2);
-                    sw.append_row(row!["Tony", blank!(2), "retired"])
+                    // sw.append_row(row![
+                    //     "Amy",
+                    //     (),
+                    //     true,
+                    //     "<xml><tag>\"Hello\" & 'World'</tag></xml>"
+                    // ])?;
+                    // sw.append_blank_rows(2);
+                    // sw.append_row(row!["Tony", blank!(2), "retired"])
+
+                    sw.append_row(#fnq)?;
+
+                    for dt in data.iter(){
+                        let mut row = Row::new();
+                        for fd in 0..4{
+                            row.add_cell(dt.name.clone());
+                        }
+                        sw.append_row(row);
+                    }
+                    Ok(())
                 })
                 .expect("write excel error!");
 
-
-                let excel_data = wb.close().expect("close excel error!").unwrap_or_else(||vec![]);
-                Ok(excel_data)
+                wb.close().map_err(|e|crab_excel::ExcelError::E("close excel error!".to_string()))
             }
         }
     };
 
+    println!("{:?}", expand.to_string());
     expand.into()
 }

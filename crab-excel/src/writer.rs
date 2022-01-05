@@ -3,10 +3,10 @@
 use std::{
     path::{Path, PathBuf},
     str::FromStr,
-    time::SystemTime,
+    time::SystemTime, vec,
 };
 
-use crate::err;
+use crate::ExcelError;
 
 /// Excel导出参数
 #[derive(Debug)]
@@ -42,6 +42,7 @@ impl ExportParam {
     }
 }
 
-pub trait ExcelWriter: Sized {
-    fn simple_write(data: &[Self]) -> Result<Vec<u8>, err::ExcelError>;
+pub trait ExcelWriter {
+    type Input;
+    fn simple_write(data: &[Self::Input]) -> Result<Option<Vec<u8>>, ExcelError>;
 }

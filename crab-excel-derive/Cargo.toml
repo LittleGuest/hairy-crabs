@@ -13,3 +13,6 @@ syn = { version = "1.0.82", features = ["full"] }
 quote = "1.0.10"
 proc-macro2 = "1.0.33"
 darling = "0.13.1"
+
+
+thiserror = "1.0.30"

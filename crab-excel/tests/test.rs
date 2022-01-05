@@ -1,6 +1,4 @@
-use std::process::Output;
-
-use calamine::{open_workbook, DataType, Reader, Xls, Xlsx};
+use calamine::{open_workbook, Reader, Xlsx};
 use xlsxwriter::{FormatAlignment, FormatColor, FormatUnderline, Workbook};
 
 #[test]
