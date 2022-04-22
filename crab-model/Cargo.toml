@@ -1,0 +1,24 @@
+[package]
+name = "crab-model"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+crab-common = { path = "../crab-common" }
+crab-lib = { path = "../crab-lib" }
+
+serde = { version = "1.0.131", features = ["derive"] }
+
+# DB相关
+rbatis = { version = "3.1.6", default-features = false, features = [
+    "mysql",
+    "runtime-tokio-rustls",
+    # "debug_mode",
+] }
+rbson = "2.0.3"
+# rbatis日志
+fast_log = "1.4.4"
+
+validator = { version = "0.14.0", features = ["derive"] }

@@ -2,7 +2,7 @@
   <div class="account-settings-info-view">
     <a-row :gutter="16">
       <a-col :md="20" :lg="12" :offset="2">
-       <a-form-model
+        <a-form-model
           layout="vertical"
           :rules="rules"
           :model="user"

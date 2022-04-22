@@ -15,14 +15,14 @@ fn test_read() {
 #[test]
 fn test_write() {
     let workbook = Workbook::new("simple_style.xlsx");
-    let mut format1 = workbook.add_format().set_font_color(FormatColor::Red);
+    let format1 = workbook.add_format().set_font_color(FormatColor::Red);
 
-    let mut format2 = workbook
+    let format2 = workbook
         .add_format()
         .set_font_color(FormatColor::Blue)
         .set_underline(FormatUnderline::Single);
 
-    let mut format3 = workbook
+    let format3 = workbook
         .add_format()
         .set_font_color(FormatColor::Green)
         .set_align(FormatAlignment::CenterAcross)
@@ -86,5 +86,5 @@ fn test_write_simple() {
     })
     .expect("write excel error!");
 
-    let excel_data = wb.close().expect("close excel error!");
+    let _excel_data = wb.close().expect("close excel error!");
 }

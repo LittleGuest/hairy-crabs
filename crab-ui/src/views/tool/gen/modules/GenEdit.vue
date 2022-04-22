@@ -6,14 +6,14 @@
       style="margin-bottom: 10px;height:calc(100vh - 172px)">
       <a-tabs default-active-key="2">
         <a-tab-pane key="1" tab="基本信息" force-render>
-          <basic-info-form ref="basicInfo" :info="info" style="height:calc(100vh - 280px);overflow: auto;"/>
+          <basic-info-form v-if="infoIsShow" ref="basicInfo" :info="info" style="height:calc(100vh - 280px);overflow: auto;"/>
         </a-tab-pane>
         <a-tab-pane key="2" tab="字段信息" force-render >
           <!-- 表格 -->
           <a-table
             ref="table"
             size="small"
-            :scroll="{ x: 1500, y: 'calc(100vh - 320px)' }"
+            :scroll="{ x: 2000, y: 'calc(100vh - 320px)' }"
             bordered
             :columns="columns"
             :loading="tableLoading"
@@ -25,11 +25,43 @@
               <a-icon type="drag" class="dragIconClass"/>
             </template>
             <span slot="colSpanTitle">
+              <span>
+                <a-tooltip placement="topRight" style="cursor: help">
+                  <template slot="title">
+                    <span>该选项表示24栅格中<br>摆放控件的个数,通过右侧选项可快速将列表列数进行统一修改</span>
+                  </template>
+                  列数<a-icon type="question-circle" />
+                </a-tooltip>
+                <a-select style="width: 130px;" v-model="colSpanValue">
+                  <a-select-option :value="1">一列/24栅格</a-select-option>
+                  <a-select-option :value="2">两列/24栅格</a-select-option>
+                  <a-select-option :value="3">三列/24栅格</a-select-option>
+                  <a-select-option :value="4">四列/24栅格</a-select-option>
+                </a-select>
+              </span>
+            </span>
+            <span slot="isColumnSortTitle">
               <a-tooltip placement="topRight" style="cursor: help">
                 <template slot="title">
-                  <span>该选项表示24栅格中<br>摆放控件个数</span>
+                  <span>该选项表示是否在列上生成排序功能<br>类型为用户或部门的列无法排序<br>如需排序请特殊处理，树和树表格不支持该功能</span>
                 </template>
-                列数<a-icon type="question-circle" />
+                排序<a-icon type="question-circle" />
+              </a-tooltip>
+            </span>
+            <span slot="isQueryTitle">
+              <a-tooltip placement="topRight" style="cursor: help">
+                <template slot="title">
+                  <span>该选项表示是否生成查询区条件<br>1：下拉多选和多选框不支持设置查询条件<br>2：日期需要区间查询，请指定between查询方式</span>
+                </template>
+                查询<a-icon type="question-circle" />
+              </a-tooltip>
+            </span>
+            <span slot="isLogTitle">
+              <a-tooltip placement="topRight" style="cursor: help">
+                <template slot="title">
+                  <span>该选项表示是否记录该字段的<br>变更日志例如：由X变为Y</span>
+                </template>
+                日志<a-icon type="question-circle" />
               </a-tooltip>
             </span>
             <template slot="columnName" slot-scope="text">
@@ -70,6 +102,9 @@
             <!-- 日志 -->
             <template slot="isLog" slot-scope="text, record">
               <a-checkbox v-model="record.isLog" :disabled="checkDisabledColumn(record)"></a-checkbox>
+            </template>
+            <template slot="isColumnSort" slot-scope="text, record">
+              <a-checkbox v-model="record.isColumnSort" :disabled="checkDisabledColumn(record)"></a-checkbox>
             </template>
             <!-- 查询方式 -->
             <template slot="queryType" slot-scope="text, record">
@@ -131,10 +166,10 @@
                   }
                 "
                 :disabled="checkDisabledColumn(record)">
-                <a-select-option :value="1">一列/24栅格</a-select-option>
-                <a-select-option :value="2">两列/24栅格</a-select-option>
-                <a-select-option :value="3">三列/24栅格</a-select-option>
-                <a-select-option :value="4">四列/24栅格</a-select-option>
+                <a-select-option :value="1" v-if="colSpanValue>=1">一列/24栅格</a-select-option>
+                <a-select-option :value="2" v-if="colSpanValue>=2">两列/24栅格</a-select-option>
+                <a-select-option :value="3" v-if="colSpanValue>=3">三列/24栅格</a-select-option>
+                <a-select-option :value="4" v-if="colSpanValue>=4">四列/24栅格</a-select-option>
               </a-select>
             </template>
             <!-- 显示类型 -->
@@ -201,7 +236,7 @@
         </a-tab-pane>
         <a-tab-pane key="3" tab="生成信息" force-render>
           <gen-info-form
-            v-if="templateListOptions.length>0"
+            v-if="infoIsShow"
             ref="genInfo"
             :info="info"
             :menus="menus"
@@ -245,27 +280,29 @@
     },
     data () {
       return {
+        colSpanValue: 2,
         tableId: 0,
         formTitle: '修改生成配置',
         // 表格加载
         tableLoading: false,
+        infoIsShow: false,
         // 字典信息
         dictOptions: [],
-         templateListOptions: [],
+        templateListOptions: [],
         javaTypeList: ['Long', 'String', 'Integer', 'Double', 'BigDecimal', 'Date', 'DateTime'],
         htmlTypeList: [
-        { 'code': 'input', 'label': '文本框' },
-        { 'code': 'number', 'label': '数字框' },
-        { 'code': 'textarea', 'label': '文本域' },
-        { 'code': 'select', 'label': '下拉框' },
-        { 'code': 'selectMultiple', 'label': '下拉框（多选）' },
-        { 'code': 'radio', 'label': '单选框' },
-        { 'code': 'checkbox', 'label': '复选框' },
-        { 'code': 'user', 'label': '用户控件' },
-        { 'code': 'dept', 'label': '部门控件' },
-        { 'code': 'datetime', 'label': '日期控件' },
-        { 'code': 'time', 'label': '时间' },
-        { 'code': 'editor', 'label': '富文本控件' }
+          { 'code': 'input', 'label': '文本框' },
+          { 'code': 'number', 'label': '数字框' },
+          { 'code': 'textarea', 'label': '文本域' },
+          { 'code': 'select', 'label': '下拉框' },
+          { 'code': 'selectMultiple', 'label': '下拉框（多选）' },
+          { 'code': 'radio', 'label': '单选框' },
+          { 'code': 'radioButton', 'label': '单选按钮' },
+          { 'code': 'checkbox', 'label': '复选框' },
+          { 'code': 'datetime', 'label': '日期控件' },
+          { 'code': 'time', 'label': '时间' },
+          { 'code': 'user', 'label': '用户控件' },
+          { 'code': 'dept', 'label': '部门控件' }
         ],
         disabledColumn: ['id', 'create_by', 'create_dept', 'create_time', 'update_by', 'update_time', 'update_ip', 'version', 'del_flag'],
         // 菜单信息
@@ -352,7 +389,7 @@
                     customRender: 'isEdit'
                   },
                   align: 'center',
-                  width: '3%'
+                  width: '50px'
                 },
                 {
                   title: '必填',
@@ -361,7 +398,7 @@
                     customRender: 'isRequired'
                   },
                   align: 'center',
-                  width: '3%'
+                  width: '50px'
                 },
                 {
                   title: '唯一性',
@@ -370,7 +407,7 @@
                     customRender: 'isUnique'
                   },
                   align: 'center',
-                  width: '4%'
+                  width: '80px'
                 },
                 {
                   title: '显示类型',
@@ -379,7 +416,7 @@
                     customRender: 'htmlType'
                   },
                   align: 'center',
-                  width: '10%'
+                  width: '150px'
                 },
                 {
                   dataIndex: 'colSpan',
@@ -388,7 +425,7 @@
                   },
                   slots: { title: 'colSpanTitle' },
                   align: 'center',
-                  width: 120
+                  width: '180px'
                 },
                 {
                   title: '新行',
@@ -397,7 +434,7 @@
                     customRender: 'isNewRow'
                   },
                   align: 'center',
-                  width: '3%'
+                  width: '50px'
                 },
                 {
                   title: '字典类型',
@@ -409,14 +446,15 @@
                   width: 110
                 },
                 {
-                  title: '日志',
                   dataIndex: 'isLog',
                   scopedSlots: {
                     customRender: 'isLog'
                   },
+                  slots: { title: 'isLogTitle' },
                   align: 'center',
-                  width: '3%'
-                }, {
+                  width: '80px'
+                },
+                {
                   title: '字段校验',
                   dataIndex: 'colCheck',
                   scopedSlots: {
@@ -440,13 +478,22 @@
                   width: '3%'
                 },
                 {
-                  title: '查询',
+                  dataIndex: 'isColumnSort',
+                  scopedSlots: {
+                    customRender: 'isColumnSort'
+                  },
+                  slots: { title: 'isColumnSortTitle' },
+                  align: 'center',
+                  width: '5%'
+                },
+                {
                   dataIndex: 'isQuery',
                   scopedSlots: {
                     customRender: 'isQuery'
                   },
+                  slots: { title: 'isQueryTitle' },
                   align: 'center',
-                  width: '3%'
+                  width: '5%'
                 },
                 {
                   title: '查询方式',
@@ -471,6 +518,28 @@
         ]
       }
     },
+    watch: {
+        '$route' (to, from) {
+          if (to.name === 'GenEdit') {
+            const tableId = to.params.tableId
+            if (tableId) {
+              this.tableId = tableId
+            } else {
+              const genTableId = 'genTableId'
+              this.tableId = storage.get(genTableId)
+            }
+              this.tableLoading = true
+              this.getGenTableInfo()
+          }
+        },
+        colSpanValue (val, oldVal) {
+              this.tableList.forEach(function (record) {
+                 if (record.colSpan !== 0) {
+                    record.colSpan = 1
+                 }
+              })
+         }
+      },
     created () {
       const tableId = this.$route.params && this.$route.params.tableId
       if (tableId) {
@@ -481,6 +550,22 @@
       }
       this.tableLoading = true
       if (this.tableId) {
+        /** 查询字典下拉列表 */
+        getDictOptionselect().then(response => {
+          this.dictOptions = response.data
+        })
+        /** 查询菜单下拉列表 */
+        getMenuTreeselect().then(response => {
+          this.menus = response.data
+        })
+        listTemplate().then(response => {
+          this.templateListOptions = response.data.list
+        })
+        this.getGenTableInfo()
+      }
+    },
+    methods: {
+      getGenTableInfo () {
         // 获取表详细信息
         getGenTable(this.tableId).then(res => {
           const tableList = res.data.rows
@@ -493,28 +578,18 @@
             e.isQuery = e.isQuery === '1'
             e.isUnique = e.isUnique === '1'
             e.isLog = e.isLog === '1'
+            e.isColumnSort = e.isColumnSort === '1'
             e.isRequired = e.isRequired === '1'
             e.colCheck = (e.colCheck !== '' && e.colCheck !== null) ? e.colCheck.split(',') : []
           })
           this.tableList = tableList
+          this.colSpanValue = res.data.info.colSpans
           this.info = res.data.info
           this.tableLoading = false
           this.rowDrop()
+          this.infoIsShow = true
         })
-        /** 查询字典下拉列表 */
-        getDictOptionselect().then(response => {
-          this.dictOptions = response.data
-        })
-        /** 查询菜单下拉列表 */
-        getMenuTreeselect().then(response => {
-          this.menus = response.data
-        })
-        listTemplate().then(response => {
-          this.templateListOptions = response.data.list
-        })
-      }
-    },
-    methods: {
+      },
       /**
        * 校验行是否可以编辑
        */
@@ -522,7 +597,7 @@
          let superColumn = record.superColumn
          const htmlType = record.htmlType
          if (type === 'dictType') {
-           if (htmlType !== 'select' && htmlType !== 'selectMultiple' && htmlType !== 'radio' && htmlType !== 'checkbox') {
+           if (htmlType !== 'select' && htmlType !== 'selectMultiple' && htmlType !== 'radio' && htmlType !== 'radioButton' && htmlType !== 'checkbox') {
              superColumn = true
              // 清除数据
              record.dictType = ''
@@ -541,7 +616,7 @@
            if (queryType === 'LIKE') {
              record.queryType = 'EQ'
            }
-         } else if (htmlType === 'select' || htmlType === 'radio' || htmlType === 'checkbox' || htmlType === 'selectMultiple') {
+         } else if (htmlType === 'select' || htmlType === 'radio' || htmlType === 'radioButton' || htmlType === 'checkbox' || htmlType === 'selectMultiple') {
            // 设置字段居中方式
            record.alignType = 'center'
            if (queryType === 'LIKE') {
@@ -563,7 +638,7 @@
          let superColumn = record.superColumn
          const htmlType = record.htmlType
          if (type === 'dictType') {
-           if (htmlType !== 'select' && htmlType !== 'selectMultiple' && htmlType !== 'radio' && htmlType !== 'checkbox') {
+           if (htmlType !== 'select' && htmlType !== 'selectMultiple' && htmlType !== 'radio' && htmlType !== 'radioButton' && htmlType !== 'checkbox') {
              superColumn = true
              // 清除数据
              record.dictType = ''
@@ -595,16 +670,16 @@
               { 'code': 'select', 'label': '下拉框' },
               { 'code': 'selectMultiple', 'label': '下拉框（多选）' },
               { 'code': 'radio', 'label': '单选框' },
-              { 'code': 'checkbox', 'label': '复选框' },
+              { 'code': 'radioButton', 'label': '单选按钮' },
               { 'code': 'user', 'label': '用户控件' },
               { 'code': 'dept', 'label': '部门控件' },
-              { 'code': 'editor', 'label': '富文本控件' }
+              { 'code': 'checkbox', 'label': '复选框' }
             ]
         }
       },
       dictTypeVisible (record) {
           const htmlType = record.htmlType
-          if (htmlType !== 'select' && htmlType !== 'selectMultiple' && htmlType !== 'radio' && htmlType !== 'checkbox') {
+          if (htmlType !== 'select' && htmlType !== 'selectMultiple' && htmlType !== 'radio' && htmlType !== 'radioButton' && htmlType !== 'checkbox') {
             this.$message.error('请选择')
             return false
           }
@@ -625,10 +700,12 @@
             e.isQuery = e.isQuery ? '1' : '0'
             e.isUnique = e.isUnique ? '1' : '0'
             e.isLog = e.isLog ? '1' : '0'
+            e.isColumnSort = e.isColumnSort ? '1' : '0'
             e.isRequired = e.isRequired ? '1' : '0'
             e.colCheck = e.colCheck.join(',')
           })
           genTable.columns = tableList
+          genTable.colSpans = this.colSpanValue
           genTable.params = {
             treeCode: genTable.treeCode,
             treeName: genTable.treeName,
@@ -636,7 +713,9 @@
             parentMenuId: genTable.parentMenuId,
             menuIcon: genTable.menuIcon,
             attachOption: genTable.attachOption,
-            disableEnableOption: genTable.disableEnableOption
+            disableEnableOption: genTable.disableEnableOption,
+            saveAndAddOption: genTable.saveAndAddOption,
+            copyRecordOption: genTable.copyRecordOption
           }
           updateGenTableNoValidated(genTable).then(res => {
             if (res.code === 200) {
@@ -671,10 +750,12 @@
             e.isQuery = e.isQuery ? '1' : '0'
             e.isUnique = e.isUnique ? '1' : '0'
             e.isLog = e.isLog ? '1' : '0'
+            e.isColumnSort = e.isColumnSort ? '1' : '0'
             e.isRequired = e.isRequired ? '1' : '0'
             e.colCheck = e.colCheck.join(',')
           })
           genTable.columns = tableList
+          genTable.colSpans = this.colSpanValue
           genTable.params = {
             treeCode: genTable.treeCode,
             treeName: genTable.treeName,
@@ -682,7 +763,9 @@
             parentMenuId: genTable.parentMenuId,
             menuIcon: genTable.menuIcon,
             attachOption: genTable.attachOption,
-            disableEnableOption: genTable.disableEnableOption
+            disableEnableOption: genTable.disableEnableOption,
+            saveAndAddOption: genTable.saveAndAddOption,
+            copyRecordOption: genTable.copyRecordOption
           }
           updateGenTable(genTable).then(res => {
             if (res.code === 200) {

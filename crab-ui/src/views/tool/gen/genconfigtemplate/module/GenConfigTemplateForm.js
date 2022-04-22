@@ -19,7 +19,7 @@ export default {
   data () {
     const validateTemplateName = (rule, value, callback) => {
         if (value === '') {
-          callback(new Error('模板名称不允许为空'))
+          callback(new Error('部门名不允许为空'))
         } else {
           checkTemplateUnique(this.form.id, this.form.templateName)
           callback()
@@ -37,15 +37,9 @@ export default {
       // 表单参数
       form: {},
       rules: {
-        templateName: [{ required: true, message: '模板名称不能为空', trigger: 'change' },{ validator: this.validateTemplateName, trigger: 'change' }],
+        templateName: [{ required: true, message: '模板名称不能为空', validator: validateTemplateName, trigger: 'change' }],
         functionAuthor: [{ required: true, message: '作者不能为空', trigger: 'change' }],
-        functionAuthorEmail: [
-          {
-            type: 'email',
-            message: '请正确填写邮箱地址',
-            trigger: ['blur', 'change']
-          }
-        ],
+        functionAuthorEmail: [{ required: true, message: '邮箱不能为空', trigger: 'change' }],
         workspacePath: [{ required: true, message: '后端工作空间不能为空', trigger: 'change' }],
         wenWorkspacePath: [{ required: true, message: '前端工作空间不能为空', trigger: 'change' }],
         moduleName: [{ required: true, message: '模块名不能为空', trigger: 'change' }],

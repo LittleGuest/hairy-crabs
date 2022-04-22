@@ -2,45 +2,42 @@
   <div class="typical-home" ref="portaletDiv">
     <a-row :gutter="[24,24]" class="module-list">
       <a-col :span="8">
-        <div class="module-in module-in01 modlule-show" style="height: 260px;">
-          <a-page-header :ghost="false" title="平台简介">
+        <div class="module-in module-in01">
+          <a-page-header :ghost="false" title="技术选型">
             <template slot="extra">
               <a-icon type="more" />
             </template>
           </a-page-header>
-          <p>
-            <a-alert message="免费开源【请务必star和fork项目,关注我们最新的研发动态,请点击下方按钮访问Aidex关注】" type="info" show-icon />
-          </p>
-          <p style="text-indent: 30px;">
-            基于若依-ruoyi-vue项目扩展，前端采用Ant-Design-VUE，代码易读易懂、界面简洁美观，不仅仅是一个后台开发框架，它是一个企业级快速开发解决方案，我们将把UI交互、快速开发能力追求到极致，适配国产数据库，国产中间件，将支持多租户、flowable工作流，移动APP，更多插件正在扩展中
-          </p>
-          <p>
-            当前版本：V3.0（后台与ruoyi-vue定期同步）
-          </p>
-
-          <p>
-            <a-row :gutter="[24,24]">
-              <a-col :span="8">
-                <a-button block style="height: 40px;" type="primary" @click="goTarget('https://gitee.com/big-hedgehog/aidex-sharp')">
-                  访问AiDex
-                </a-button>
-              </a-col>
-              <a-col :span="8">
-                <a-button block style="height: 40px;" type="primary" ghost @click="goTarget('https://gitee.com/y_project/RuoYi-Vue')">
-                  访问若依
-                </a-button>
-              </a-col>
-              <a-col :span="8">
-                <a-button block style="height: 40px;" type="primary" ghost @click="caseDisplay('')">
-                  案例
-                </a-button>
-              </a-col>
-            </a-row>
-          </p>
+          <a-row :gutter="[24,24]">
+            <a-col :span="12">
+              <div class="technology">
+                <a-list size="small" :split="false" :data-source="consoleTech">
+                  <a-list-item slot="renderItem" slot-scope="item">
+                    {{ item }}
+                  </a-list-item>
+                  <div slot="header">
+                    后端
+                  </div>
+                </a-list>
+              </div>
+            </a-col>
+            <a-col :span="12">
+              <div class="technology">
+                <a-list size="small" :split="false" :data-source="frontTech" >
+                  <a-list-item slot="renderItem" slot-scope="item" >
+                    {{ item }}
+                  </a-list-item>
+                  <div slot="header">
+                    前端
+                  </div>
+                </a-list>
+              </div>
+            </a-col>
+          </a-row>
         </div>
       </a-col>
       <a-col :span="8">
-        <div class="module-in module-in01 " style="height: 340px;">
+        <div class="module-in module-in01 ">
           <a-page-header :ghost="false" title="联系我们">
             <template slot="extra">
               <a-icon type="more" />
@@ -87,7 +84,7 @@
       </a-col>
       <!-- 个人信息 -->
       <a-col :span="8">
-        <div class="module-in module-in07" style="height: 340px;">
+        <div class="module-in module-in07" style="height: 370px;">
           <a-page-header :ghost="false" title="关于我">
             <template slot="extra">
               <a-icon type="more" />
@@ -115,6 +112,14 @@
               <a-col>
                 <span>微信号：</span>
                 <span>big-hebgehog</span>
+              </a-col>
+              <a-col>
+                <span>我的特长：</span>
+                <span>专业UI设计（5年+）+VUE前端功能开发（3年+）</span>
+              </a-col>
+              <a-col>
+                <span>项目：</span>
+                <span><a style="color: red;" @click="goTarget('https://gitee.com/big-hedgehog/aidex-sharp')">若依-Adiex Sharp快速开发平台</a></span>
               </a-col>
               <a-col>
                 <a-row>

@@ -10,12 +10,20 @@
           <a-form-model-item prop="tplCategory">
             <span slot="label">
               生成模板
+              <a-tooltip>
+                <template slot="title">
+                  模板为主子表时，子表的生成模板类型设置为单表，生成模块名和包路径与主表保持一致
+                </template>
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
             </span>
             <a-select v-model="info.tplCategory" placeholder="请选择">
-              <a-select-option value="crud">单表（增删改查）</a-select-option>
-              <a-select-option value="treegrid">树表（增删改查）</a-select-option>
-              <a-select-option value="sub">主子表（增删改查）</a-select-option>
-              <a-select-option value="tree">左树右表（增删改查）</a-select-option>
+              <a-select-option value="crud">单表</a-select-option>
+              <a-select-option value="crudrowedit">单表行编辑（未实现）</a-select-option>
+              <a-select-option value="treegrid">树表格</a-select-option>
+              <a-select-option value="sub">主子表嵌套</a-select-option>
+              <a-select-option value="subnested">主子表左右（未实现）</a-select-option>
+              <a-select-option value="tree">左树右表（未实现）</a-select-option>
             </a-select>
           </a-form-model-item>
         </a-col>
@@ -170,7 +178,7 @@
           </a-form-model-item>
         </a-col>
         <a-col :span="4" :offset="1">
-          <a-form-model-item label="图标" prop="info.menuIcon">
+          <a-form-model-item label="图标" >
             <span slot="label">
               菜单图标
               <a-tooltip>
@@ -205,17 +213,12 @@
               树编码字段
               <a-tooltip>
                 <template slot="title">
-                  树显示的编码字段名， 如：dept_id
+                  树显示的编码字段名， 目前固定为id
                 </template>
                 <a-icon type="question-circle-o" />
               </a-tooltip>
             </span>
             <a-input placeholder="树编码字段" v-model="info.treeCode" value="id" disabled/>
-            <!--            <a-select v-model="info.treeCode" placeholder="请选择">
-              <a-select-option v-for="(item, index) in info.columns" :key="index" :value="item.columnName" >
-                {{ item.columnName + (item.columnComment === null ? '': '：' + item.columnComment) }}
-              </a-select-option>
-            </a-select>-->
           </a-form-model-item>
         </a-col>
         <a-col :span="9" :offset="1">
@@ -224,7 +227,7 @@
               树父编码字段
               <a-tooltip>
                 <template slot="title">
-                  树显示的父编码字段名， 如：parent_Id
+                  树显示的父编码字段名，目前固定为：parent_Id
                 </template>
                 <a-icon type="question-circle-o" />
               </a-tooltip>
@@ -339,6 +342,42 @@
             </a-radio-group>
           </a-form-model-item>
         </a-col>
+
+        <a-col :span="9" :offset="3">
+          <a-form-model-item prop="saveAndAddOption">
+            <span slot="label">
+              是否保存并继续添加
+              <a-tooltip>
+                <template slot="title">
+                  在添加页面，增加保存并继续添加按钮，方便继续添加数据
+                </template>
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
+            <a-radio-group v-model="info.saveAndAddOption">
+              <a-radio :value="'1'">是</a-radio>
+              <a-radio :value="'0'">否</a-radio>
+            </a-radio-group>
+          </a-form-model-item>
+        </a-col>
+        <a-col :span="9" :offset="3">
+          <a-form-model-item prop="copyRecordOption">
+            <span slot="label">
+              是否有复制按钮
+              <a-tooltip>
+                <template slot="title">
+                  是否可以复制当前已添加的数据，减少重复操作
+                </template>
+                <a-icon type="question-circle-o" />
+              </a-tooltip>
+            </span>
+            <a-radio-group v-model="info.copyRecordOption">
+              <a-radio :value="'1'">是</a-radio>
+              <a-radio :value="'0'">否</a-radio>
+            </a-radio-group>
+          </a-form-model-item>
+        </a-col>
+
       </a-row>
     </a-form-model>
   </div>
@@ -411,6 +450,12 @@ export default {
       }
       if (this.info.disableEnableOption === null) {
         this.info.disableEnableOption = '0'
+      }
+      if (this.info.saveAndAddOption === null) {
+        this.info.saveAndAddOption = '0'
+      }
+      if (this.info.copyRecordOption === null) {
+        this.info.copyRecordOption = '0'
       }
     },
     handleSubTableNameChange (tableName, option, extra) {

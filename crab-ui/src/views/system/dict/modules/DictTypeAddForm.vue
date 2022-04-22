@@ -1,12 +1,11 @@
 <template>
-    <ant-modal
-      :visible="open"
-      :modal-title="formTitle"
-      :adjust-size="true"
-      modalWidth="640"
-      @cancel="cancel"
-      modalHeight="420"
-    >
+  <ant-modal
+    :visible="open"
+    :modal-title="formTitle"
+    :adjust-size="true"
+    modalWidth="640"
+    @cancel="cancel"
+    modalHeight="420">
     <a-form-model ref="form" :model="form" :rules="rules" slot="content" layout="vertical">
       <a-row class="form-row" :gutter="32">
         <a-col :lg="12" :md="12" :sm="24">
@@ -22,7 +21,8 @@
         <a-col :lg="12" :md="12" :sm="24">
           <a-form-model-item label="状态" prop="status">
             <a-select placeholder="请选择" v-model="form.status">
-              <a-select-option v-for="(d, index) in statusOptions" :key="index" :value="d.dictValue" >{{ d.dictLabel }}</a-select-option>
+              <a-select-option v-for="(d, index) in statusOptions" :key="index" :value="d.dictValue">{{ d.dictLabel }}
+              </a-select-option>
             </a-select>
           </a-form-model-item>
         </a-col>
@@ -45,8 +45,8 @@
 </template>
 
 <script>
-import DictTypeForm from './DictTypeForm'
-export default {
-  ...DictTypeForm
-}
+  import DictTypeForm from './DictTypeForm'
+  export default {
+    ...DictTypeForm
+  }
 </script>

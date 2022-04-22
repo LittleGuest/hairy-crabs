@@ -1,0 +1,12 @@
+[package]
+name = "crab-cache"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+crab-config = { path = "../crab-config" }
+crab-common = { path = "../crab-common" }
+crab-model = { path = "../crab-model" }
+crab-lib = { path = "../crab-lib" }

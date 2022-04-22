@@ -1,4 +1,4 @@
-use crab_system::{dto::gen::GenTableDto, service::tool_gen::Gen};
+use crab_model::gen::GenTableDto;
 use poem::{
     handler,
     web::{Json, Query},
@@ -8,8 +8,8 @@ use poem::{
 use crate::result::Res;
 
 /// 查询代码生成列表
-#[handler]
 pub async fn gen_list(Query(dto): Query<GenTableDto>) -> impl IntoResponse {
+#[handler]
     let page = Gen::gen_list(&dto).await;
     Res::from(page)
 }

@@ -3,7 +3,8 @@
 use std::{
     path::{Path, PathBuf},
     str::FromStr,
-    time::SystemTime, vec,
+    time::SystemTime,
+    vec,
 };
 
 use crate::ExcelError;

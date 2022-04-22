@@ -27,13 +27,13 @@
                 </a-button>
               </a-col>
               <a-col :span="8">
-                <a-button block style="height: 40px;" type="primary" ghost @click="goTarget('https://gitee.com/y_project/RuoYi-Vue')">
-                  访问若依
+                <a-button block style="height: 40px;" type="primary" ghost @click="goTarget('https://www.bilibili.com/video/BV13L411u7oC?spm_id_from=333.999.0.0')">
+                  我的B站
                 </a-button>
               </a-col>
               <a-col :span="8">
-                <a-button block style="height: 40px;" type="primary" ghost @click="caseDisplay('')">
-                  案例
+                <a-button block style="height: 40px;" type="primary" ghost @click="goTarget('https://gitee.com/y_project/RuoYi-Vue')">
+                  访问若依
                 </a-button>
               </a-col>
             </a-row>

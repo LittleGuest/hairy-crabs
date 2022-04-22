@@ -1,10 +1,6 @@
 use crab_system::APP;
 use poem::{get, listener::TcpListener, post, Route, Server};
 
-mod auth;
-mod result;
-mod tool_gen;
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     crab_system::init_db().await?;

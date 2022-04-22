@@ -9,6 +9,9 @@ module.exports = {
   ],
   rules: {
     'no-console': 'off',
+    "space-before-function-paren": 0,
+    "vue/require-default-prop": "off",
+    "vue/require-prop-types":"off",
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'generator-star-spacing': 'off',
     'no-mixed-operators': 0,

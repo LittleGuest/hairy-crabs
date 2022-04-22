@@ -36,12 +36,12 @@
         </a-col>
         <a-col :span="12">
           <a-form-model-item label="后端工作空间" prop="workspacePath">
-            <a-input v-model="form.workspacePath" placeholder="示例：C:\cloud\AiDex-Sharp\ruoyi-system" />
+            <a-input v-model="form.workspacePath" placeholder="示例：C:\cloud-platform\AiDex-Vue\ruoyi-system" />
           </a-form-model-item>
         </a-col>
         <a-col :span="12">
           <a-form-model-item label="前端工作空间" prop="webWorkspacePath">
-            <a-input v-model="form.webWorkspacePath" placeholder="示例：C:\cloud\AidexSharp" />
+            <a-input v-model="form.webWorkspacePath" placeholder="示例：C:\cloud-platform\RY" />
           </a-form-model-item>
         </a-col>
         <a-col :span="12">

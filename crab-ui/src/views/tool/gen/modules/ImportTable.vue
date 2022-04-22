@@ -1,7 +1,7 @@
 <template>
   <a-modal
     ref="createModal"
-    :title="'导入代码'"
+    :title="'导入数据库表'"
     :width="900"
     :visible="visible"
     @cancel="close"
@@ -154,13 +154,20 @@ export default {
     },
     // 确认导入
     confirm () {
-      this.confirmLoading = true
-      importTable({ tables: this.tableNames.join(',') }).then(res => {
-        this.$message.success(res.msg)
-        this.confirmLoading = false
-        this.visible = false
-        this.$emit('ok')
-      })
+      if (this.tableNames.length === 0) {
+        this.$message.error(
+          '请选择要导入的表',
+          3
+        )
+      } else {
+        this.confirmLoading = true
+        importTable({ tables: this.tableNames.join(',') }).then(res => {
+          this.$message.success(res.msg)
+          this.confirmLoading = false
+          this.visible = false
+          this.$emit('ok')
+        })
+      }
     },
     /** 搜索按钮操作 */
     handleQuery () {
