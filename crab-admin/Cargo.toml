@@ -4,16 +4,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-crab-system = { path = "../crab-system" }
+crab-config = { path = "../crab-config" }
 crab-common = { path = "../crab-common" }
 crab-model = { path = "../crab-model" }
-crab-lib = {path = "../crab-lib"}
+crab-lib = { path = "../crab-lib" }
+crab-service = { path = "../crab-service" }
 
-poem = "1.2.4"
+tokio = "1.14.0"
+
+async-trait = "0.1.53"
+
+poem = "1.3.29"
 # poem-openapi = { version = "1.0.37", features = ["swagger-ui", "rapidoc"] }
 
-serde = { version = "1.0.130", features = ["derive"] }
-
-# 异步运行时
-# tokio = "1.14.0"
-
+serde = { version = "1.0.136", features = ["derive"] }

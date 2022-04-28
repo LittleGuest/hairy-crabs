@@ -28,7 +28,7 @@ pub mod template;
 lazy_static! {
     pub static ref RB: Rbatis = Rbatis::new();
     pub static ref KEYWORDS: Vec<&'static str> = {
-        // TODO Rust 关键字
+        // FIXME Rust1.60 关键字
         vec![
             "as", "async", "await","break", "const", "continue", "crate", "dyn", "else", "enum", "extern", "false",
             "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub",
@@ -88,6 +88,7 @@ pub struct TableColumn {
     pub table_name: Option<String>,
     pub name: Option<String>,
     pub default: Option<String>,
+    pub max_length: Option<i64>,
     pub is_nullable: Option<String>,
     pub column_type: Option<String>,
     pub comment: Option<String>,
@@ -110,7 +111,7 @@ pub trait Database {
 #[clap(version = "0.1.0", author = "2190975784@qq.com")]
 pub struct Generator {
     /// 数据库驱动
-    #[clap(short)]
+    #[clap(short, default_value = "mysql")]
     pub driver: Driver,
     /// 数据库账号
     #[clap(short, default_value = "root")]
@@ -119,7 +120,7 @@ pub struct Generator {
     #[clap(short, default_value = "root")]
     pub password: String,
     /// 数据库地址
-    #[clap(short, default_value = "127.0.0.1")]
+    #[clap(short, default_value = "localhost")]
     pub host: String,
     /// 数据库端口号
     #[clap(short('P'), default_value_t = 3306)]

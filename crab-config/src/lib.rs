@@ -1,6 +1,6 @@
 //! 应用配置
 
-use crab_lib::{lazy_static::lazy_static, log, serde_json::json, toml};
+use crab_lib::{lazy_static::lazy_static, serde_json::json, toml};
 use serde::{Deserialize, Serialize};
 
 /// 服务信息
@@ -51,8 +51,9 @@ impl std::fmt::Display for App {
 impl App {
     pub fn new() -> Self {
         let config = include_str!("../../config.toml");
-        log::info!("{}", config);
-        toml::from_str::<App>(config).expect("获取配置文件错误")
+        let app = toml::from_str::<App>(config).expect("解析配置文件错误或配置文件不存在");
+        println!("{app}");
+        app
     }
 }
 
@@ -65,7 +66,6 @@ mod test {
 
     #[test]
     fn test() {
-        let app = App::new();
-        app.to_string();
+        let _ = App::new();
     }
 }

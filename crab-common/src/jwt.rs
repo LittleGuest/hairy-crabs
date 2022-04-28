@@ -17,7 +17,7 @@ pub struct JWTToken {
     //角色id集合
     pub role_ids: Vec<String>,
     //过期时间
-    pub exp: usize,
+    pub exp: u128,
 }
 
 impl JWTToken {

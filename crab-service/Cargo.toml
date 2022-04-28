@@ -9,3 +9,5 @@ edition = "2021"
 crab-lib = { path = "../crab-lib" }
 crab-model = { path = "../crab-model" }
 crab-common = { path = "../crab-common" }
+crab-util = { path = "../crab-util" }
+crab-config = { path = "../crab-config" }

@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 crab-common = { path = "../crab-common" }
 crab-lib = { path = "../crab-lib" }
+crab-config = { path = "../crab-config" }
 
 serde = { version = "1.0.131", features = ["derive"] }
 

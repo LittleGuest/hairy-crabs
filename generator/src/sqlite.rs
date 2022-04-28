@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use rbatis::crud::CRUD;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
@@ -131,6 +130,8 @@ impl From<&TableColumn> for crate::TableColumn {
             column_type: col.r#type.clone(),
             field_type: Some(sqlite_2_rust(ty.0.as_str())),
             multi_world: Some(multi_world(col.name.clone().clone().unwrap().as_str())),
+            max_length: Some(255),
+            comment: col.name.clone(),
             ..Default::default()
         }
     }

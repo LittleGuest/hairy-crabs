@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use crab_lib::serde_json;
+use crab_lib::{
+    poem::{self, http::StatusCode},
+    serde_json,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::error::CrabError;
@@ -120,5 +123,25 @@ where
             Ok(data) => ResBuilder::<T>::ok().with_data(data).build(),
             Err(e) => ResBuilder::<T>::ok().with_msg(e.to_string()).build(),
         }
+    }
+}
+
+impl<T> Into<poem::Body> for Res<T>
+where
+    T: Send + Sync,
+    T: Serialize,
+{
+    fn into(self) -> poem::Body {
+        poem::Body::from_json(serde_json::to_string(&self).unwrap()).unwrap()
+    }
+}
+
+impl<T> poem::IntoResponse for Res<T>
+where
+    T: Send + Sync,
+    T: Serialize,
+{
+    fn into_response(self) -> poem::Response {
+        poem::Response::builder().status(StatusCode::OK).body(self)
     }
 }

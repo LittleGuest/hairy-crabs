@@ -1,9 +1,11 @@
-use crab_system::APP;
+use crab_admin::{auth, tool_gen};
+use crab_config::APP;
+use crab_lib::anyhow;
 use poem::{get, listener::TcpListener, post, Route, Server};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    crab_system::init_db().await?;
+    crab_model::init_db().await?;
 
     let route = Route::new()
         .at("/api/login", post(auth::login))

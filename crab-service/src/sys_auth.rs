@@ -1,60 +1,66 @@
 //! 登录验证
 
-use std::collections::HashSet;
+use std::{collections::HashSet, time::SystemTime};
 
-use crab_common::error::CrabError;
-use crab_model::{menu_dto::SysMenuTreeDto, SysMenu, SysUser, UserInfoDto};
+use crab_common::{error::CrabError, jwt::JWTToken};
+use crab_config::APP;
+use crab_model::{menu_dto::SysMenuTreeDto, LoginUserDto, SysMenu, SysUser, UserInfoDto};
+use crab_util::password_encoder::PasswordEncoder;
 
 #[derive(Clone, Copy)]
 pub struct SysLogin;
 
 impl SysLogin {
-    // /// 登录验证
-    // pub async fn login(
-    //     username: String,
-    //     password: String,
-    //     _code: String,
-    //     _uuid: String,
-    // ) -> Result<LoginUserDto, CrabError> {
-    //     // TODO 验证码开关是否打开
-    //     // let captcha_on =
-    //     //     ConfigUtil::get_config_bool_value_by_key(consts::config::SYS_CAPTCHA_ON_OFF, false);
-    //     // if captcha_on {
-    //     //     Self::validate_captcha(&username, &code, &uuid)?;
-    //     // }
+    /// 登录验证
+    pub async fn login(
+        username: String,
+        password: String,
+        _code: String,
+        _uuid: String,
+    ) -> Result<LoginUserDto, CrabError> {
+        // TODO 验证码开关是否打开
+        // let captcha_on =
+        //     ConfigUtil::get_config_bool_value_by_key(consts::config::SYS_CAPTCHA_ON_OFF, false);
+        // if captcha_on {
+        //     Self::validate_captcha(&username, &code, &uuid)?;
+        // }
 
-    //     // 用户验证
-    //     let user = SysUser::get_by_username(&username).await?;
-    //     match user {
-    //         Some(user) => {
-    //             if !PasswordEncoder::verify(
-    //                 user.password
-    //                     .as_ref()
-    //                     .ok_or_else(|| CrabError::UsernameOrPasswordError)?,
-    //                 &password,
-    //             ) {
-    //                 return Err(CrabError::UsernameOrPasswordError);
-    //             }
+        // 用户验证
+        let user = SysUser::get_by_username(&username).await?;
+        match user {
+            Some(user) => {
+                if !PasswordEncoder::verify(
+                    user.password
+                        .as_ref()
+                        .ok_or_else(|| CrabError::UsernameOrPasswordError)?,
+                    &password,
+                ) {
+                    return Err(CrabError::UsernameOrPasswordError);
+                }
 
-    //             let jwt_token = JWTToken {
-    //                 id: user.id.clone().unwrap_or(String::new()),
-    //                 account: username,
-    //                 permissions: vec![],
-    //                 role_ids: vec![],
-    //                 exp: DateTimeNative::now().timestamp_millis() as usize,
-    //             };
-    //             let access_token = jwt_token.create_token(APP.jwt_secret.as_str())?;
+                let jwt_token = JWTToken {
+                    id: user.id.clone().unwrap_or(String::new()),
+                    account: username,
+                    permissions: vec![],
+                    role_ids: vec![],
+                    // TODO 时间
+                    exp: SystemTime::now()
+                        .duration_since(SystemTime::UNIX_EPOCH)
+                        .unwrap()
+                        .as_millis(), // exp: DateTimeNative::now().timestamp_millis() as usize,
+                };
+                let access_token = jwt_token.create_token(APP.jwt_secret.as_str())?;
 
-    //             // TODO 记录登录日志
+                // TODO 记录登录日志
 
-    //             Ok(LoginUserDto {
-    //                 user,
-    //                 access_token: access_token,
-    //             })
-    //         }
-    //         None => Err(CrabError::UserNotFound),
-    //     }
-    // }
+                Ok(LoginUserDto {
+                    user,
+                    access_token: access_token,
+                })
+            }
+            None => Err(CrabError::UserNotFound),
+        }
+    }
 
     /// 获取用户信息
     pub async fn user_info(user_id: &str) -> Result<UserInfoDto, CrabError> {

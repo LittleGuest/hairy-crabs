@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    # "crab-admin",
+    "crab-admin",
     "crab-excel",
     "crab-excel-derive",
     "crab-config",

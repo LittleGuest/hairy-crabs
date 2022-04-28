@@ -9,7 +9,7 @@ use validator::Validate;
 #[serde(rename_all(serialize = "camelCase"))]
 pub struct {{ struct_name }} { {% if has_columns %}{% for column in columns %}
     /// {{column.comment}}
-    /// {%if column.field_type == "String"%}#[validate(length(max = {{column.character_maximum_length}}))]{%endif%}
+    {%if column.field_type == "String"%}#[validate(length(max = {{column.max_length}}))]{%endif%}
     pub {{column.name}}: Option<{{column.field_type}}>,{% endfor %}{% endif %}
 }
 "#;

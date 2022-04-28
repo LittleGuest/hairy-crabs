@@ -133,6 +133,7 @@ impl From<&TableColumn> for crate::TableColumn {
                     .unwrap()
                     .contains(|c| c == '_' || c == '-')
             }),
+            max_length: c.character_maximum_length,
         }
     }
 }
@@ -154,14 +155,14 @@ pub fn mysql_2_rust(t: &str) -> (String, String) {
             ("String".to_string(), "String".to_string())
         }
         "BLOB" | "TINYBLOB" | "MEDIUMBLOB" | "LONGBLOB" | "TINYTEXT" | "MEDIUMTEXT"
-        | "LONGTEXT" => ("Vec<u8>".to_string(), "Collection".to_string()),
+        | "LONGTEXT" => ("String".to_string(), "Collection".to_string()),
         "BIT" | "BOOLEAN" => ("u8".to_string(), "Number".to_string()),
         "DATE" => ("rbatis::DateNative".to_string(), "Date".to_string()),
         "TIME" | "YEAR" => ("rbatis::DateTimeNative".to_string(), "Date".to_string()),
         "DATETIME" => ("rbatis::DateTimeNative".to_string(), "Date".to_string()),
         "TIMESTAMP" => ("rbatis::Timestamp".to_string(), "Date".to_string()),
         "JSON" => ("Json<serde_json::Value>".to_string(), "String".to_string()),
-        _ => ("Vec<u8>".to_string(), "Collection".to_string()),
+        _ => ("String".to_string(), "Collection".to_string()),
     }
 }
 
