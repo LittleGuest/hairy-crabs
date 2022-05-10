@@ -1,5 +1,10 @@
+use std::time::Duration;
+
 use crab_common::error::CrabError;
-use rbatis::{crud::CRUD, Page, PageRequest};
+use crab_lib::log;
+use rbatis::{
+    crud::CRUD, executor::RbatisExecutor, html_sql, push_index, rb_html, Page, PageRequest,
+};
 
 use crate::{dto::gen::GenTableDto, GenTable, RB};
 
@@ -14,7 +19,7 @@ impl GenTable {
             ..
         }: &GenTableDto,
     ) -> Result<Page<Self>, CrabError> {
-        let sql = "
+        let mut sql = "
         select
             table_id,
             table_name,
@@ -40,22 +45,26 @@ impl GenTable {
             gen_table
         where
             1 = 1
-        if  table_name != null:
-            AND lower(table_name) like lower(concat('%', #{table_name}, '%'))
-        if table_comment != null:
-            AND lower(table_comment) like lower(concat('%', #{table_comment}, '%'))
         "
         .to_string();
 
+        if let Some(tn) = table_name {
+            sql.push_str(
+                format!(" AND lower(table_name) like lower(concat('%', '{tn}', '%')) ").as_str(),
+            );
+        }
+
+        if let Some(tc) = table_comment {
+            sql.push_str(
+                format!(" AND lower(table_comment) like lower(concat('%', '{tc}', '%')) ").as_str(),
+            );
+        }
+
         let page: Result<Page<Self>, CrabError> = RB
-            .fetch_page(
-                &sql,
-                vec![rbson::bson!({ "table_name": table_name,"table_comment": table_comment })],
-                &PageRequest::new_option(page_num, page_size),
-            )
+            .fetch_page(&sql, vec![], &PageRequest::new_option(page_num, page_size))
             .await
-            .map_err(|_e| {
-                // log::error!("查询业务列表: {}", e);
+            .map_err(|e| {
+                log::error!("查询业务列表: {}", e);
                 CrabError::ServerError("查询业务列表")
             });
         page

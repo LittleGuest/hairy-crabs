@@ -52,7 +52,7 @@ impl App {
     pub fn new() -> Self {
         let config = include_str!("../../config.toml");
         let app = toml::from_str::<App>(config).expect("解析配置文件错误或配置文件不存在");
-        println!("{app}");
+        println!("{:#?}", app);
         app
     }
 }

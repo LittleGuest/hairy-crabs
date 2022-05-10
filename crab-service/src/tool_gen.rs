@@ -1,6 +1,9 @@
 use crab_common::error::CrabError;
-use crab_lib::rbatis::Page;
-use crab_model::{gen::GenTableDto, GenTable};
+use crab_lib::{
+    log,
+    rbatis::{Page, PageRequest},
+};
+use crab_model::{gen::GenTableDto, GenTable, RB};
 
 pub struct Gen;
 

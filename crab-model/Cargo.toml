@@ -13,13 +13,21 @@ crab-config = { path = "../crab-config" }
 serde = { version = "1.0.131", features = ["derive"] }
 
 # DB相关
-rbatis = { version = "3.1.6", default-features = false, features = [
+rbatis = { version = "3.1.1", default-features = false, features = [
     "mysql",
     "runtime-tokio-rustls",
-    # "debug_mode",
+    "debug_mode",
 ] }
 rbson = "2.0.3"
-# rbatis日志
-fast_log = "1.4.4"
+fast_log = "1.5.1"
+log = "0.4.16"
+
+
+# sea-orm = { version = "0.7.1", features = [
+#     "macros",
+#     "sqlx-mysql",
+#     "sqlx-sqlite",
+#     "runtime-tokio",
+# ] }
 
 validator = { version = "0.14.0", features = ["derive"] }

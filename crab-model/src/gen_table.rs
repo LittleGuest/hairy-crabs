@@ -54,6 +54,8 @@ pub struct GenTable {
     /// 生成代码方式（0zip压缩包 1自定义路径）
     #[validate(length(max = 1))]
     pub gen_type: Option<String>,
+    /// 
+    pub col_spans: Option<u64>,
     ///
     #[validate(length(max = 4000))]
     pub options: Option<String>,
