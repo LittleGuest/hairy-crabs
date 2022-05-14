@@ -4,7 +4,7 @@ use std::{collections::HashSet, time::SystemTime};
 
 use crab_common::{error::CrabError, jwt::JWTToken};
 use crab_config::APP;
-use crab_model::{menu_dto::SysMenuTreeDto, LoginUserDto, SysMenu, SysUser, UserInfoDto};
+use crab_model::{LoginUserDto, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto};
 use crab_util::password_encoder::PasswordEncoder;
 
 #[derive(Clone, Copy)]
@@ -39,7 +39,7 @@ impl SysLogin {
                 }
 
                 let jwt_token = JWTToken {
-                    id: user.id.clone().unwrap_or(String::new()),
+                    id: user.id.unwrap(),
                     account: username,
                     permissions: vec![],
                     role_ids: vec![],
@@ -63,7 +63,7 @@ impl SysLogin {
     }
 
     /// 获取用户信息
-    pub async fn user_info(user_id: &str) -> Result<UserInfoDto, CrabError> {
+    pub async fn user_info(user_id: i64) -> Result<UserInfoDto, CrabError> {
         // 获取基本信息
         let user = SysUser::get_by_id(user_id).await?;
 
@@ -90,7 +90,7 @@ impl SysLogin {
         } else {
             menus = SysMenu::get_menu_by_user_id(user_id).await?;
         }
-        Ok(Self::get_child_perms(menus, "0"))
+        Ok(Self::get_child_perms(menus, 0))
     }
 
     /// 是否为管理员
@@ -99,10 +99,10 @@ impl SysLogin {
     }
 
     /// 根据父节点的ID获取所有子节点
-    fn get_child_perms(menus: HashSet<SysMenu>, parent_id: &str) -> HashSet<SysMenuTreeDto> {
+    fn get_child_perms(menus: HashSet<SysMenu>, parent_id: i64) -> HashSet<SysMenuTreeDto> {
         let mut menus = menus
             .iter()
-            .filter(|m| Some(parent_id.to_string()).eq(&m.parent_id))
+            .filter(|m| Some(parent_id) == m.pid)
             .map(|m| SysMenuTreeDto::from(m))
             .collect::<Vec<_>>();
 
@@ -131,7 +131,7 @@ impl SysLogin {
     fn childs(menus: &Vec<SysMenuTreeDto>, mt: &SysMenuTreeDto) -> Vec<SysMenuTreeDto> {
         menus
             .iter()
-            .filter(|smt| smt.parent_id.eq(&mt.id))
+            .filter(|smt| smt.pid == mt.id)
             .cloned()
             .collect::<Vec<_>>()
     }

@@ -21,6 +21,8 @@ pub enum CrabError {
     JwtError(&'static str),
     #[error("服务器异常 : {0}")]
     ServerError(&'static str),
+    #[error("SQL错误")]
+    SqlError,
     #[error("未知错误")]
     Unknown,
 

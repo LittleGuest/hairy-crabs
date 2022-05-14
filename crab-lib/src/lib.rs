@@ -15,6 +15,7 @@ pub use redis;
 pub extern crate serde;
 // pub use serde_json;
 // pub use serde_yaml;
+pub use async_trait;
 pub use poem;
 pub use thiserror;
 pub use toml;

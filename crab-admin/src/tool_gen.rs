@@ -1,6 +1,6 @@
 use crab_common::result::Res;
 use crab_lib::poem::{handler, web::Query, IntoResponse};
-use crab_model::gen::GenTableDto;
+use crab_model::GenTableDto;
 use crab_service::tool_gen::Gen;
 
 /// 查询代码生成列表

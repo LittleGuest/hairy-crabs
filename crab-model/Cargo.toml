@@ -22,12 +22,4 @@ rbson = "2.0.3"
 fast_log = "1.5.1"
 log = "0.4.16"
 
-
-# sea-orm = { version = "0.7.1", features = [
-#     "macros",
-#     "sqlx-mysql",
-#     "sqlx-sqlite",
-#     "runtime-tokio",
-# ] }
-
 validator = { version = "0.14.0", features = ["derive"] }

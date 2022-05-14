@@ -111,7 +111,7 @@ where
     }
 }
 
-type CrabResult<T, E = CrabError> = std::result::Result<T, E>;
+pub type CrabResult<T, E = CrabError> = std::result::Result<T, E>;
 
 impl<T> From<CrabResult<T>> for Res<T>
 where

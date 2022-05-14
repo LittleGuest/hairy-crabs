@@ -117,7 +117,7 @@ impl From<&TableColumn> for crate::TableColumn {
             name: Some(column_keywords(c.column_name.clone().unwrap().as_str())),
             default: c.column_default.clone(),
             is_nullable: {
-                let ft = ty.0.clone();
+                let ft = ty.clone();
                 if ft.contains("Time") {
                     Some("Yes".to_string())
                 } else {
@@ -126,7 +126,7 @@ impl From<&TableColumn> for crate::TableColumn {
             },
             column_type: c.column_type.clone(),
             comment: c.column_comment.clone(),
-            field_type: Some(ty.0.clone()),
+            field_type: Some(ty.clone()),
             multi_world: Some({
                 c.column_name
                     .clone()
@@ -138,31 +138,60 @@ impl From<&TableColumn> for crate::TableColumn {
     }
 }
 
-/// FIXME：Mysql 类型转换为Rust对应类型
-pub fn mysql_2_rust(t: &str) -> (String, String) {
-    match t {
-        "DECIMAL" => ("rbatis::Decimal".to_string(), "Decimal".to_string()),
-        "BIGINT UNSIGNED" => ("u64".to_string(), "Number".to_string()),
-        "BIGINT" => ("i64".to_string(), "Number".to_string()),
-        "INT UNSIGNED" | "MEDIUMINT UNSIGNED" => ("u32".to_string(), "Number".to_string()),
-        "INT" | "MEDIUMINT" => ("i32".to_string(), "Number".to_string()),
-        "SMALLINT" => ("i16".to_string(), "Number".to_string()),
-        "SMALLINT UNSIGNED" => ("u16".to_string(), "Number".to_string()),
-        "TINYINT UNSIGNED" => ("u8".to_string(), "Number".to_string()),
-        "TINYINT" => ("i8".to_string(), "Number".to_string()),
-        "FLOAT" | "DOUBLE" => ("f64".to_string(), "Decimal".to_string()),
-        "BINARY" | "VARBINARY" | "CHAR" | "VARCHAR" | "TEXT" | "ENUM" => {
-            ("String".to_string(), "String".to_string())
+/// Mysql 类型转换为Rust对应类型
+pub fn mysql_2_rust(t: &str) -> String {
+    match t.to_uppercase().as_str() {
+        // TINYINT 	1 	-128 	0 	127 	255
+        // SMALLINT 	2 	-32768 	0 	32767 	65535
+        // MEDIUMINT 	3 	-8388608 	0 	8388607 	16777215
+        // INT 	4 	-2147483648 	0 	2147483647 	4294967295
+        // BIGINT 	8 	-263 	0 	263-1 	264-1
+        "TINYINT" => "i8".to_string(),
+        "TINYINT UNSIGNED" => "u8".to_string(),
+        "SMALLINT" => "i16".to_string(),
+        "SMALLINT UNSIGNED" => "u16".to_string(),
+        "MEDIUMINT" => "i32".to_string(),
+        "MEDIUMINT UNSIGNED" => "u32".to_string(),
+        "INT" | "INTEGER" => "i32".to_string(),
+        "INT UNSIGNED" | "INTEGER UNSIGNED" => "u32".to_string(),
+        "BIGINT" => "i64".to_string(),
+        "BIGINT UNSIGNED" | "SERIAL" => "u64".to_string(),
+        // DECIMAL, NUMERIC
+        "DECIMAL" => "rbatis::Decimal".to_string(),
+        "NUMERIC" => "f64".to_string(),
+        // FLOAT, DOUBLE
+        "FLOAT" => "f32".to_string(),
+        "DOUBLE" | "DOUBLE PRECISION" => "f64".to_string(),
+        // BIT
+        "BIT" => "u8".to_string(),
+        // BOOL、 BOOLEAN
+        "BOOL" | "BOOLEAN" => "u8".to_string(),
+
+        // DATE 	'0000-00-00'
+        // TIME 	'00:00:00'
+        // DATETIME 	'0000-00-00 00:00:00'
+        // TIMESTAMP 	'0000-00-00 00:00:00'
+        // YEAR 	0000
+        "DATE" => "rbatis::DateNative".to_string(),
+        "TIME" => "rbatis::TimeNative".to_string(),
+        "DATETIME" => "rbatis::DateTimeNative".to_string(),
+        "TIMESTAMP" => "rbatis::Timestamp".to_string(),
+        "YEAR" => "rbatis::DateNative".to_string(),
+
+        // CHAR, VARCHAR, BINARY, VARBINARY, BLOB, TEXT, ENUM, and SET.
+        "CHAR" => "char".to_string(),
+        "VARCHAR" | "BINARY" | "VARBINARY" | "TINYBLOB" | "TINYTEXT" | "BLOB" | "TEXT"
+        | "MEDIUMBLOB" | "MEDIUMTEXT" | "LONGBLOB" | "LONGTEXT" | "ENUM" | "SET" => {
+            "String".to_string()
         }
-        "BLOB" | "TINYBLOB" | "MEDIUMBLOB" | "LONGBLOB" | "TINYTEXT" | "MEDIUMTEXT"
-        | "LONGTEXT" => ("String".to_string(), "Collection".to_string()),
-        "BIT" | "BOOLEAN" => ("u8".to_string(), "Number".to_string()),
-        "DATE" => ("rbatis::DateNative".to_string(), "Date".to_string()),
-        "TIME" | "YEAR" => ("rbatis::DateTimeNative".to_string(), "Date".to_string()),
-        "DATETIME" => ("rbatis::DateTimeNative".to_string(), "Date".to_string()),
-        "TIMESTAMP" => ("rbatis::Timestamp".to_string(), "Date".to_string()),
-        "JSON" => ("Json<serde_json::Value>".to_string(), "String".to_string()),
-        _ => ("String".to_string(), "Collection".to_string()),
+
+        // GEOMETRY, POINT, LINESTRING, POLYGON
+        // MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION
+
+        // JSON
+        "JSON" => "serde_jso:Value".to_string(),
+
+        _ => "String".to_string(),
     }
 }
 

@@ -3,7 +3,7 @@ use crab_lib::{
     log,
     rbatis::{Page, PageRequest},
 };
-use crab_model::{gen::GenTableDto, GenTable, RB};
+use crab_model::{GenTable, GenTableDto, RB};
 
 pub struct Gen;
 

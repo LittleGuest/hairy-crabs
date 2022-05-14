@@ -23,8 +23,8 @@ pub async fn login(
 
 /// 获取用户信息
 #[handler]
-pub async fn user_info(Path(user_id): Path<String>) -> impl IntoResponse {
-    let user_info = SysLogin::user_info(&user_id).await;
+pub async fn user_info(Path(user_id): Path<i64>) -> impl IntoResponse {
+    let user_info = SysLogin::user_info(user_id).await;
     Res::from(user_info)
 }
 

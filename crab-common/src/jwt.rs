@@ -9,7 +9,7 @@ use crate::error::CrabError;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct JWTToken {
     //账号id
-    pub id: String,
+    pub id: i64,
     //账号
     pub account: String,
     //权限集合

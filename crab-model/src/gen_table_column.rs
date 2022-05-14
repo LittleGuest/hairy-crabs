@@ -1,14 +1,19 @@
-use rbatis::crud_table;
+
+use crab_common::{error::CrabError, result::CrabResult};
+use rbatis::{crud::CRUD, crud_table};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+
+use crate::{Mapper, RB};
 
 /// 代码生成业务表字段
 #[crud_table]
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Validate)]
 #[serde(rename_all(serialize = "camelCase"))]
-pub struct GenTableColumn {
+pub struct GenTableColumn { 
     /// 编号
-    pub column_id: Option<i64>,
+    
+    pub id: Option<i64>,
     /// 归属表编号
     #[validate(length(max = 64))]
     pub table_id: Option<String>,
@@ -54,10 +59,14 @@ pub struct GenTableColumn {
     /// 是否记录日志
     #[validate(length(max = 10))]
     pub is_log: Option<String>,
+    /// 是否排序
+    #[validate(length(max = 10))]
+    pub is_column_sort: Option<String>,
     /// 新行
     #[validate(length(max = 10))]
     pub is_new_row: Option<String>,
     /// 列数
+    
     pub col_span: Option<i32>,
     /// 对齐方式
     #[validate(length(max = 10))]
@@ -75,15 +84,87 @@ pub struct GenTableColumn {
     #[validate(length(max = 100))]
     pub col_check: Option<String>,
     /// 排序
+    
     pub sort: Option<i32>,
     /// 创建者
-    #[validate(length(max = 64))]
-    pub create_by: Option<String>,
+    
+    pub create_by: Option<i64>,
     /// 创建时间
-    pub create_time: Option<rbatis::DateTimeNative>,
+    
+    pub create_at: Option<rbatis::DateTimeNative>,
     /// 更新者
-    #[validate(length(max = 64))]
-    pub update_by: Option<String>,
+    
+    pub update_by: Option<i64>,
     /// 更新时间
-    pub update_time: Option<rbatis::DateTimeNative>,
+    
+    pub update_at: Option<rbatis::DateTimeNative>,
 }
+
+#[crab_lib::async_trait::async_trait]
+impl Mapper for GenTableColumn {
+    async fn save(&self) -> CrabResult<Option<i64>> {
+        let res = RB.save(self, &[]).await.map_err(|e| {
+            log::error!("Mapper::save error {}", e);
+            CrabError::SqlError
+        })?;
+        Ok(res.last_insert_id)
+    }
+    async fn save_batch(models: &[Self]) -> CrabResult<u64> {
+        let res = RB.save_batch(models, &[]).await.map_err(|e| {
+            log::error!("Mapper::save_batch error {}", e);
+            CrabError::SqlError
+        })?;
+        Ok(res.rows_affected)
+    }
+    async fn update(&self) -> CrabResult<u64> {
+        let w = RB.new_wrapper().eq("id", self.id);
+        let res = RB.update_by_wrapper(self, w, &[]).await.map_err(|e| {
+            log::error!("Mapper::update error {}", e);
+            CrabError::SqlError
+        })?;
+        Ok(res)
+    }
+    async fn remove_by_id(id: i64) -> CrabResult<u64> {
+        let res = RB
+            .remove_by_column::<Self, _>("id", id)
+            .await
+            .map_err(|e| {
+                log::error!("Mapper::remove_by_id error {}", e);
+                CrabError::SqlError
+            })?;
+        Ok(res)
+    }
+    async fn remove_batch_by_ids(ids: &[i64]) -> CrabResult<u64> {
+        let res = RB
+            .remove_batch_by_column::<Self, _>("id", ids)
+            .await
+            .map_err(|e| {
+                log::error!("Mapper::remove_batch_by_ids error {}", e);
+                CrabError::SqlError
+            })?;
+        Ok(res)
+    }
+    async fn list() -> CrabResult<Vec<Self>> {
+        let res = RB.fetch_list().await.map_err(|e| {
+            log::error!("Mapper::list error {}", e);
+            CrabError::SqlError
+        })?;
+        Ok(res)
+    }
+    async fn fetch_by_id(id: i64) -> CrabResult<Option<Self>> {
+        let res = RB.fetch_by_column("id", id).await.map_err(|e| {
+            log::error!("Mapper::fetch_by_id error {}", e);
+            CrabError::SqlError
+        })?;
+        Ok(res)
+    }
+    async fn fetch_by_ids(ids: &[i64]) -> CrabResult<Vec<Self>> {
+        let res = RB.fetch_list_by_column("id", ids).await.map_err(|e| {
+            log::error!("Mapper::fetch_by_ids error {}", e);
+            CrabError::SqlError
+        })?;
+        Ok(res)
+    }
+}
+
+impl GenTableColumn {}
