@@ -1,4 +1,3 @@
-
 use crab_common::{error::CrabError, result::CrabResult};
 use rbatis::{crud::CRUD, crud_table};
 use serde::{Deserialize, Serialize};
@@ -10,9 +9,8 @@ use crate::{Mapper, RB};
 #[crud_table]
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Validate)]
 #[serde(rename_all(serialize = "camelCase"))]
-pub struct GenTableColumn { 
+pub struct GenTableColumn {
     /// 编号
-    
     pub id: Option<i64>,
     /// 归属表编号
     #[validate(length(max = 64))]
@@ -66,7 +64,6 @@ pub struct GenTableColumn {
     #[validate(length(max = 10))]
     pub is_new_row: Option<String>,
     /// 列数
-    
     pub col_span: Option<i32>,
     /// 对齐方式
     #[validate(length(max = 10))]
@@ -84,19 +81,14 @@ pub struct GenTableColumn {
     #[validate(length(max = 100))]
     pub col_check: Option<String>,
     /// 排序
-    
     pub sort: Option<i32>,
     /// 创建者
-    
     pub create_by: Option<i64>,
     /// 创建时间
-    
     pub create_at: Option<rbatis::DateTimeNative>,
     /// 更新者
-    
     pub update_by: Option<i64>,
     /// 更新时间
-    
     pub update_at: Option<rbatis::DateTimeNative>,
 }
 

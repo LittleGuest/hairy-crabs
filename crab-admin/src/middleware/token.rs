@@ -1,39 +1,29 @@
-use poem::{handler, web::Data, Endpoint, EndpointExt, Middleware, Request, Result};
-
-/// jwt 中间件
-struct TokenMiddleware;
-
-impl<E: Endpoint> Middleware<E> for TokenMiddleware {
-    type Output = TokenMiddlewareImpl<E>;
-
-    fn transform(&self, ep: E) -> Self::Output {
-        TokenMiddlewareImpl { ep }
-    }
-}
-
-struct TokenMiddlewareImpl<E> {
-    ep: E,
-}
+use crab_common::jwt::JWTToken;
+use crab_config::APP;
+use poem::{Endpoint, EndpointExt, Request, Result};
 
 const TOKEN_HEADER: &str = "X-Token";
 
-/// Token data
-struct Token(String);
-
-#[poem::async_trait]
-impl<E: Endpoint> Endpoint for TokenMiddlewareImpl<E> {
-    type Output = E::Output;
-
-    async fn call(&self, mut req: Request) -> Result<Self::Output> {
+pub async fn token_middleware<E: Endpoint>(next: E, mut req: Request) -> Result<E::Output> {
+    log::info!("token中间件");
+    let uri = req.uri().path();
+    // 白名单不校验token
+    let wl = APP.white_list();
+    if !wl.is_empty() && wl.iter().any(|u| u.starts_with(uri)) {
         if let Some(value) = req
             .headers()
             .get(TOKEN_HEADER)
             .and_then(|value| value.to_str().ok())
         {
-            let token = value.to_string();
-            req.extensions_mut().insert(Token(token));
+            match JWTToken::verify(value) {
+                Ok(token) => {
+                    req.extensions_mut().insert(token);
+                }
+                Err(e) => {
+                    log::error!("验证token有效失败: uri = {uri}, token = {value}, {e}");
+                }
+            }
         }
-
-        self.ep.call(req).await
     }
+    next.call(req).await
 }

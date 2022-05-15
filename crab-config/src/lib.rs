@@ -55,6 +55,10 @@ impl App {
         println!("{:#?}", app);
         app
     }
+
+    pub fn white_list(&self) -> Vec<String> {
+        self.white_list.iter().cloned().collect::<_>()
+    }
 }
 
 lazy_static! {

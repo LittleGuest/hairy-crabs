@@ -142,6 +142,9 @@ where
     T: Serialize,
 {
     fn into_response(self) -> poem::Response {
-        poem::Response::builder().status(StatusCode::OK).body(self)
+        poem::Response::builder()
+            .status(StatusCode::OK)
+            .header("content-type", "application/json;charset=utf-8")
+            .body(self.to_string())
     }
 }

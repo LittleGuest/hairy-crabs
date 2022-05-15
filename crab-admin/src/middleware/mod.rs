@@ -4,4 +4,8 @@
 /// 记录请求耗时中间件
 /// 返回值统一包装中间件
 ///
-pub mod token;
+mod token;
+pub use token::token_middleware;
+
+mod log;
+pub use self::log::LogMilldeware;

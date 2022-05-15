@@ -1,4 +1,3 @@
-
 use crab_common::{error::CrabError, result::CrabResult};
 use rbatis::{crud::CRUD, crud_table};
 use serde::{Deserialize, Serialize};
@@ -10,9 +9,8 @@ use crate::{Mapper, RB};
 #[crud_table]
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Validate)]
 #[serde(rename_all(serialize = "camelCase"))]
-pub struct GenConfigTemplate { 
-    /// 
-    
+pub struct GenConfigTemplate {
+    ///
     pub id: Option<i64>,
     /// 模板名称
     #[validate(length(max = 50))]
@@ -39,28 +37,21 @@ pub struct GenConfigTemplate {
     #[validate(length(max = 10))]
     pub template_default: Option<String>,
     /// 排序
-    
     pub sort: Option<i32>,
     /// 状态（0正常 1 停用）
-    
     pub status: Option<i8>,
     /// 备注
     #[validate(length(max = 500))]
     pub remark: Option<String>,
     /// 创建者
-    
     pub create_by: Option<i64>,
     /// 创建时间
-    
     pub create_at: Option<rbatis::DateTimeNative>,
     /// 更新者
-    
     pub update_by: Option<i64>,
     /// 更新时间
-    
     pub update_at: Option<rbatis::DateTimeNative>,
     /// 删除标志（0代表存在 1代表删除）
-    
     pub del_flag: Option<i8>,
 }
 

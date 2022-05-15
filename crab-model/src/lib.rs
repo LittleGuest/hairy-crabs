@@ -3,12 +3,7 @@
 use crab_common::{error::CrabError, result::CrabResult};
 use crab_config::APP;
 use crab_lib::lazy_static::lazy_static;
-use fast_log::{
-    config::Config,
-    consts::LogSize,
-    plugin::{file_split::RollingType, packer::LogPacker},
-};
-use rbatis::{crud::CRUDTable, db::DBPoolOptions, rbatis::Rbatis, Page, PageRequest};
+use rbatis::{crud::CRUDTable, db::DBPoolOptions, rbatis::Rbatis};
 
 mod sys_user;
 pub use sys_user::*;
@@ -27,16 +22,6 @@ lazy_static! {
 
 /// 初始化数据库
 pub async fn init_db() -> Result<(), CrabError> {
-    // 启用日志输出
-    fast_log::init(Config::new().console().file_split(
-        "target/logs/",
-        LogSize::MB(1),
-        RollingType::All,
-        LogPacker {},
-    ))
-    .unwrap();
-
-    //初始化连接池
     log::info!("初始化数据库连接");
     let pool_options = DBPoolOptions::default();
     RB.link_opt(APP.database_url.as_str(), pool_options)
@@ -46,7 +31,6 @@ pub async fn init_db() -> Result<(), CrabError> {
             CrabError::ServerError("数据库连接失败")
         })?;
     log::info!("初始化数据库连接完成");
-
     Ok(())
 }
 

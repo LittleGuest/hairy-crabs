@@ -1,3 +1,4 @@
+use crab_config::APP;
 use crab_lib::jsonwebtoken::{
     self, errors::ErrorKind, DecodingKey, EncodingKey, Header, Validation,
 };
@@ -22,24 +23,24 @@ pub struct JWTToken {
 
 impl JWTToken {
     /// 生成token
-    pub fn create_token(&self, secret: &str) -> Result<String, CrabError> {
+    pub fn create_token(&self) -> Result<String, CrabError> {
         return match jsonwebtoken::encode(
             &Header::default(),
             self,
-            &EncodingKey::from_secret(secret.as_ref()),
+            &EncodingKey::from_secret(APP.jwt_secret.as_bytes()),
         ) {
             Ok(t) => Ok(t),
             Err(_) => Err(CrabError::JwtError("JWTToken encode fail!")),
         };
     }
     /// 验证token是否有效
-    pub fn verify(secret: &str, token: &str) -> Result<JWTToken, CrabError> {
+    pub fn verify(token: &str) -> Result<JWTToken, CrabError> {
         let validation = Validation {
             ..Validation::default()
         };
         return match jsonwebtoken::decode::<JWTToken>(
             &token,
-            &DecodingKey::from_secret(secret.as_ref()),
+            &DecodingKey::from_secret(APP.jwt_secret.as_bytes()),
             &validation,
         ) {
             Ok(c) => Ok(c.claims),

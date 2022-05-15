@@ -3,7 +3,6 @@
 use std::{collections::HashSet, time::SystemTime};
 
 use crab_common::{error::CrabError, jwt::JWTToken};
-use crab_config::APP;
 use crab_model::{LoginUserDto, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto};
 use crab_util::password_encoder::PasswordEncoder;
 
@@ -49,7 +48,7 @@ impl SysLogin {
                         .unwrap()
                         .as_millis(), // exp: DateTimeNative::now().timestamp_millis() as usize,
                 };
-                let access_token = jwt_token.create_token(APP.jwt_secret.as_str())?;
+                let access_token = jwt_token.create_token()?;
 
                 // TODO 记录登录日志
 
