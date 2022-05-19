@@ -11,3 +11,4 @@ crab-model = { path = "../crab-model" }
 crab-common = { path = "../crab-common" }
 crab-util = { path = "../crab-util" }
 crab-config = { path = "../crab-config" }
+crab-cache = { path = "../crab-cache" }

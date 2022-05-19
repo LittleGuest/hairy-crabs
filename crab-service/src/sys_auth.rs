@@ -1,9 +1,11 @@
 //! 登录验证
 
-use std::{collections::HashSet, time::SystemTime};
+use std::collections::HashSet;
 
-use crab_common::{error::CrabError, jwt::JWTToken};
-use crab_model::{LoginUserDto, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto};
+use crab_cache::{ConfigUtil, RedisCache};
+use crab_common::{consts, error::CrabError, jwt::JWTToken, result::CrabResult};
+use crab_lib::rbatis::snowflake::new_snowflake_id;
+use crab_model::{Mapper, SysLoginLog, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto};
 use crab_util::password_encoder::PasswordEncoder;
 
 #[derive(Clone, Copy)]
@@ -12,97 +14,86 @@ pub struct SysLogin;
 impl SysLogin {
     /// 登录验证
     pub async fn login(
-        username: String,
+        account: String,
         password: String,
-        _code: String,
-        _uuid: String,
-    ) -> Result<LoginUserDto, CrabError> {
-        // TODO 验证码开关是否打开
-        // let captcha_on =
-        //     ConfigUtil::get_config_bool_value_by_key(consts::config::SYS_CAPTCHA_ON_OFF, false);
-        // if captcha_on {
-        //     Self::validate_captcha(&username, &code, &uuid)?;
-        // }
+        code: String,
+        uuid: String,
+    ) -> CrabResult<String> {
+        // 验证码开关
+        if ConfigUtil::get_config_bool_value_by_key(consts::config::SYS_CAPTCHA_ON_OFF, true) {
+            Self::verify_captcha(&account, &code, &uuid).await?;
+        }
 
-        // 用户验证
-        let user = SysUser::get_by_username(&username).await?;
-        match user {
-            Some(user) => {
-                if !PasswordEncoder::verify(
-                    user.password
-                        .as_ref()
-                        .ok_or_else(|| CrabError::UsernameOrPasswordError)?,
-                    &password,
-                ) {
-                    return Err(CrabError::UsernameOrPasswordError);
-                }
-
-                let jwt_token = JWTToken {
-                    id: user.id.unwrap(),
-                    account: username,
-                    permissions: vec![],
-                    role_ids: vec![],
-                    // TODO 时间
-                    exp: SystemTime::now()
-                        .duration_since(SystemTime::UNIX_EPOCH)
-                        .unwrap()
-                        .as_millis(), // exp: DateTimeNative::now().timestamp_millis() as usize,
-                };
-                let access_token = jwt_token.create_token()?;
-
-                // TODO 记录登录日志
-
-                Ok(LoginUserDto {
-                    user,
-                    access_token: access_token,
-                })
+        if let Some(user) = SysUser::get_by_username(&account).await? {
+            if !PasswordEncoder::verify(
+                &password,
+                user.password
+                    .as_ref()
+                    .ok_or(CrabError::UsernameOrPasswordError)?,
+            ) {
+                return Err(CrabError::UsernameOrPasswordError);
             }
-            None => Err(CrabError::UserNotFound),
+
+            let jwt_token = JWTToken {
+                user_id: user.id.unwrap(),
+                account,
+                permissions: vec![],
+                role_ids: vec![],
+                // TODO 时间
+                // exp: 0,
+            };
+
+            let login_log = SysLoginLog {
+                id: Some(new_snowflake_id()),
+                account: user.account,
+                ..Default::default()
+            };
+            login_log.save().await?;
+
+            Ok(jwt_token.create_token()?)
+        } else {
+            Err(CrabError::UserNotFound)
         }
     }
 
     /// 获取用户信息
-    pub async fn user_info(user_id: i64) -> Result<UserInfoDto, CrabError> {
-        // 获取基本信息
-        let user = SysUser::get_by_id(user_id).await?;
+    pub async fn user_info(user_id: i64) -> CrabResult<UserInfoDto> {
+        if let Some(mut user) = SysUser::get_by_id(user_id).await? {
+            // TODO 获取角色集合
+            // TODO 获取权限集合
+            user.password = None;
 
-        if let Some(user) = user {
-            // 获取角色集合
-            // 获取权限集合
-            // 获取用户自定义首页
-            // TODO 获取用户待读通知公告
-            return Ok(UserInfoDto {
+            Ok(UserInfoDto {
                 user,
                 roles: HashSet::with_capacity(0),
                 permissions: HashSet::with_capacity(0),
-                lincense_info: "".to_string(),
-            });
+            })
+        } else {
+            Err(CrabError::UserNotFound)
         }
-        Err(CrabError::UserNotFound)
     }
 
     /// 获取用户路由信息
-    pub async fn routers(user_id: &str) -> Result<HashSet<SysMenuTreeDto>, CrabError> {
-        let menus;
-        if Self::is_admin(user_id) {
-            menus = SysMenu::menus().await?;
+    pub async fn routers(user_id: i64) -> CrabResult<HashSet<SysMenuTreeDto>> {
+        let menus = if Self::is_admin(user_id) {
+            SysMenu::menus().await?
         } else {
-            menus = SysMenu::get_menu_by_user_id(user_id).await?;
-        }
+            SysMenu::get_menu_by_user_id(user_id).await?
+        };
         Ok(Self::get_child_perms(menus, 0))
     }
 
     /// 是否为管理员
-    pub fn is_admin(user_id: &str) -> bool {
-        !user_id.is_empty() && user_id.eq("1")
+    pub fn is_admin(user_id: i64) -> bool {
+        user_id == 1
     }
 
     /// 根据父节点的ID获取所有子节点
-    fn get_child_perms(menus: HashSet<SysMenu>, parent_id: i64) -> HashSet<SysMenuTreeDto> {
+    fn get_child_perms(menus: HashSet<SysMenu>, pid: i64) -> HashSet<SysMenuTreeDto> {
         let mut menus = menus
             .iter()
-            .filter(|m| Some(parent_id) == m.pid)
-            .map(|m| SysMenuTreeDto::from(m))
+            .filter(|m| Some(pid) == m.pid)
+            .map(SysMenuTreeDto::from)
             .collect::<Vec<_>>();
 
         let mut all = HashSet::new();
@@ -127,7 +118,7 @@ impl SysLogin {
     }
 
     /// 得到子节点列表
-    fn childs(menus: &Vec<SysMenuTreeDto>, mt: &SysMenuTreeDto) -> Vec<SysMenuTreeDto> {
+    fn childs(menus: &[SysMenuTreeDto], mt: &SysMenuTreeDto) -> Vec<SysMenuTreeDto> {
         menus
             .iter()
             .filter(|smt| smt.pid == mt.id)
@@ -135,23 +126,27 @@ impl SysLogin {
             .collect::<Vec<_>>()
     }
 
-    // /// 校验验证码
-    // fn validate_captcha(_username: &str, code: &str, uuid: &str) -> Result<(), CrabError> {
-    //     let verify_key = format!("{}{}", consts::CAPTCHA_CODE_KEY, uuid);
-    //     let captcha = redis_cache::get::<String>(&verify_key);
-    //     match captcha {
-    //         Some(captcha) => {
-    //             if !code.eq_ignore_ascii_case(&captcha) {
-    //                 // TODO 记录登录日志
-    //                 return Err(CrabError::CaptchaError);
-    //             }
+    /// 校验验证码
+    async fn verify_captcha(account: &str, code: &str, uuid: &str) -> CrabResult<()> {
+        let verify_key = format!("{}{}", consts::CAPTCHA_CODE_KEY, uuid);
 
-    //             Ok(())
-    //         }
-    //         None => {
-    //             // TODO 记录登录日志
-    //             Err(CrabError::CaptchaExpireError)
-    //         }
-    //     }
-    // }
+        let mut login_log = SysLoginLog {
+            id: Some(new_snowflake_id()),
+            account: Some(account.to_string()),
+            ..Default::default()
+        };
+
+        if let Some(captcha) = RedisCache::get::<String>(&verify_key) {
+            if !code.eq_ignore_ascii_case(&captcha) {
+                login_log.msg = Some("验证码错误".to_string());
+                login_log.save().await?;
+                return Err(CrabError::CaptchaError);
+            }
+            Ok(())
+        } else {
+            login_log.msg = Some("验证码失效".to_string());
+            login_log.save().await?;
+            Err(CrabError::CaptchaExpireError)
+        }
+    }
 }

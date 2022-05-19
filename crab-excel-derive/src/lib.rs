@@ -70,7 +70,7 @@ fn impl_excel_writer_macro(ewm: ExcelWriterMacro) -> TokenStream {
     let struct_name_token = &ewm.ident;
 
     let mut field_names = vec![];
-    &ewm.data.map_struct_fields(|el| {
+    ewm.data.map_struct_fields(|el| {
         let field_name = el.ident.unwrap().to_string();
         field_names.push(field_name.clone());
         let mut col_name = el.name.unwrap_or_else(|| "".to_string());

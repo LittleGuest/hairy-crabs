@@ -22,7 +22,7 @@ impl ExportParam {
     fn new() -> Self {
         let file_name = Self::file_name();
         Self {
-            file_name: file_name,
+            file_name,
             path: {
                 let pb = PathBuf::new();
                 pb.with_file_name(file_name);

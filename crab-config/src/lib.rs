@@ -48,6 +48,12 @@ impl std::fmt::Display for App {
     }
 }
 
+impl Default for App {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl App {
     pub fn new() -> Self {
         let config = include_str!("../../config.toml");
@@ -55,21 +61,8 @@ impl App {
         println!("{:#?}", app);
         app
     }
-
-    pub fn white_list(&self) -> Vec<String> {
-        self.white_list.iter().cloned().collect::<_>()
-    }
 }
 
 lazy_static! {
     pub static ref APP: App = App::new();
-}
-
-mod test {
-    use super::*;
-
-    #[test]
-    fn test() {
-        let _ = App::new();
-    }
 }

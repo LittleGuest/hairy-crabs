@@ -9,8 +9,8 @@ use crate::error::CrabError;
 /// JWT 鉴权 Token结构
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct JWTToken {
-    //账号id
-    pub id: i64,
+    //用户ID
+    pub user_id: i64,
     //账号
     pub account: String,
     //权限集合
@@ -18,7 +18,7 @@ pub struct JWTToken {
     //角色id集合
     pub role_ids: Vec<String>,
     //过期时间
-    pub exp: u128,
+    // pub exp: u128,
 }
 
 impl JWTToken {
@@ -33,13 +33,14 @@ impl JWTToken {
             Err(_) => Err(CrabError::JwtError("JWTToken encode fail!")),
         };
     }
+
     /// 验证token是否有效
     pub fn verify(token: &str) -> Result<JWTToken, CrabError> {
         let validation = Validation {
             ..Validation::default()
         };
         return match jsonwebtoken::decode::<JWTToken>(
-            &token,
+            token,
             &DecodingKey::from_secret(APP.jwt_secret.as_bytes()),
             &validation,
         ) {

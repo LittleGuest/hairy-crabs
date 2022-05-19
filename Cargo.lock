@@ -394,11 +394,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50b727aacc797f9fc28e355d21f34709ac4fc9adecfe470ad07b8f4464f53062"
 dependencies = [
  "bytes",
- "futures-core",
  "memchr",
- "pin-project-lite",
- "tokio",
- "tokio-util 0.6.9",
 ]
 
 [[package]]
@@ -500,9 +496,9 @@ dependencies = [
  "log",
  "poem",
  "rbatis",
- "redis",
  "serde",
  "serde_json",
+ "simple_redis",
  "thiserror",
  "tokio",
  "tokio-test",
@@ -529,6 +525,7 @@ dependencies = [
 name = "crab-service"
 version = "0.1.0"
 dependencies = [
+ "crab-cache",
  "crab-common",
  "crab-config",
  "crab-lib",
@@ -1039,7 +1036,7 @@ dependencies = [
  "indexmap",
  "slab",
  "tokio",
- "tokio-util 0.7.1",
+ "tokio-util",
  "tracing",
 ]
 
@@ -1842,7 +1839,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-stream",
- "tokio-util 0.7.1",
+ "tokio-util",
  "tracing",
 ]
 
@@ -2072,16 +2069,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a80b5f38d7f5a020856a0e16e40a9cfabf88ae8f0e4c2dcd8a3114c1e470852"
 dependencies = [
  "async-trait",
- "bytes",
  "combine",
  "dtoa",
- "futures-util",
  "itoa 0.4.8",
  "percent-encoding",
- "pin-project-lite",
- "sha1",
- "tokio",
- "tokio-util 0.6.9",
  "url",
 ]
 
@@ -2375,6 +2366,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6db230f8c2b728df78fe7a53de78139e1fd370454a85113793956e945de8cb5c"
 dependencies = [
  "zip",
+]
+
+[[package]]
+name = "simple_redis"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd99b1fe8f2aa89e060d14679e024cff08eef4245ae2cf8d0b42bea208bb4049"
+dependencies = [
+ "redis",
 ]
 
 [[package]]
@@ -2820,20 +2820,6 @@ dependencies = [
  "futures-core",
  "tokio",
  "tokio-stream",
-]
-
-[[package]]
-name = "tokio-util"
-version = "0.6.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e99e1983e5d376cd8eb4b66604d2e99e79f5bd988c3055891dcd8c9e2604cc0"
-dependencies = [
- "bytes",
- "futures-core",
- "futures-sink",
- "log",
- "pin-project-lite",
- "tokio",
 ]
 
 [[package]]

@@ -1,18 +1,21 @@
+/// 密码编码器
 pub struct PasswordEncoder;
 
 impl PasswordEncoder {
-    pub fn encode(raw_password: &str) -> String {
-        // let digest = md5::compute(raw_password);
+    /// 加密密码
+    pub fn encode(pwd: &str) -> String {
+        // let digest = md5::compute(pwd);
         // format!("{:x}", digest)
-        format!("{}", raw_password)
+        pwd.to_string()
     }
 
-    pub fn verify(password: &str, raw_password: &str) -> bool {
-        if password.eq(raw_password) {
+    /// 校验密码
+    pub fn verify(pwd: &str, raw_pwd: &str) -> bool {
+        if pwd.eq(raw_pwd) {
             return true;
         }
-        let hashed = PasswordEncoder::encode(raw_password);
-        password.eq(&hashed)
+        let pwd = PasswordEncoder::encode(pwd);
+        pwd.eq(&raw_pwd)
     }
 }
 
@@ -38,6 +41,6 @@ mod test {
         assert!(PasswordEncoder::verify(password, raw_password));
 
         let encode_password = PasswordEncoder::encode(password);
-        assert!(PasswordEncoder::verify(&encode_password, password));
+        assert!(PasswordEncoder::verify(&encode_password, raw_password));
     }
 }

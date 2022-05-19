@@ -73,13 +73,10 @@ const fn http_method() -> [(&'static str, HttpMethod); 8] {
 impl HttpMethod {
     /// 解析目标请求方式
     pub fn resolve(method: &str) -> Option<Self> {
-        match http_method()
+        http_method()
             .iter()
-            .find(|(m, _hm)| m.eq_ignore_ascii_case(&method))
-        {
-            Some(&hm) => Some(hm.1),
-            None => None,
-        }
+            .find(|(m, _hm)| m.eq_ignore_ascii_case(method))
+            .map(|&hm| hm.1)
     }
 
     /// 匹配目标请求方式是否满足

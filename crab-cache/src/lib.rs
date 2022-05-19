@@ -1,13 +1,18 @@
 //! 缓存
 
+use std::sync::{Arc, Mutex};
+
 use crab_config::APP;
 use crab_lib::{
     lazy_static::lazy_static,
-    redis::{Client, Connection},
+    redis::{self, client::Client},
 };
 
-pub mod config_util;
-pub mod redis_cache;
+mod config_util;
+pub use config_util::ConfigUtil;
+
+mod redis_cache;
+pub use redis_cache::RedisCache;
 
 /// 缓存接口
 pub trait CacheUtil {
@@ -26,17 +31,10 @@ pub trait CacheUtil {
 }
 
 lazy_static! {
-    static ref REDIS: Client = client();
+    static ref REDIS: Arc<Mutex<Client>> = client();
 }
 
-/// 获取 Redis client
-fn client() -> Client {
-    let client = Client::open(APP.redis_url.clone()).expect("获取 Redis Client 失败");
-    client
-}
-
-/// 获取 Redis 连接
-fn connection() -> Connection {
-    let conn = REDIS.get_connection().expect("获取 Redis 连接失败");
-    conn
+fn client() -> Arc<Mutex<Client>> {
+    let client = redis::create(APP.redis_url.as_str()).expect("获取 Redis Client 失败");
+    Arc::new(Mutex::new(client))
 }

@@ -143,7 +143,7 @@ impl Mapper for SysMenu {
 
 impl SysMenu {
     /// 根据用户ID查询菜单树信息
-    pub async fn get_menu_by_user_id(_user_id: &str) -> Result<HashSet<Self>, CrabError> {
+    pub async fn get_menu_by_user_id(_user_id: i64) -> Result<HashSet<Self>, CrabError> {
         let sql = "
         select
             distinct
@@ -159,20 +159,17 @@ impl SysMenu {
             t.status ,
             ifnull(t.perms, '') ,
             t.icon ,
-            t.parent_id ,
+            t.pid ,
             t.parent_ids ,
             t.tree_sort ,
             t.tree_sorts ,
             t.tree_level ,
             t.tree_leaf ,
             t.create_by ,
-            t.create_dept ,
-            t.create_time ,
+            t.create_at ,
             t.update_by ,
-            t.update_time ,
-            t.update_ip ,
+            t.update_at ,
             t.remark ,
-            t.version ,
             t.del_flag
         from
             sys_menu t
@@ -217,20 +214,17 @@ impl SysMenu {
             t.status ,
             ifnull(t.perms, '') ,
             t.icon ,
-            t.parent_id ,
+            t.pid ,
             t.parent_ids ,
             t.tree_sort ,
             t.tree_sorts ,
             t.tree_level ,
             t.tree_leaf ,
             t.create_by ,
-            t.create_dept ,
-            t.create_time ,
+            t.create_at ,
             t.update_by ,
-            t.update_time ,
-            t.update_ip ,
+            t.update_at ,
             t.remark ,
-            t.version ,
             t.del_flag
         from
             sys_menu t

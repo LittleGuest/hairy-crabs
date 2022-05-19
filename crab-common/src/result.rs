@@ -45,7 +45,7 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match serde_json::to_string(self) {
             Ok(v) => write!(f, "{}", v),
-            Err(e) => write!(f, "{}", e.to_string()),
+            Err(e) => write!(f, "{}", e),
         }
     }
 }
@@ -56,39 +56,43 @@ where
     T: Send + Sync,
     T: Serialize;
 
+impl<T> Default for ResBuilder<T>
+where
+    T: Send + Sync,
+    T: Serialize,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> ResBuilder<T>
 where
     T: Send + Sync,
     T: Serialize,
 {
     pub fn new() -> Self {
-        Self {
-            0: Res {
-                code: 200,
-                msg: "成功".to_string(),
-                data: None,
-            },
-        }
+        Self(Res {
+            code: 200,
+            msg: "成功".to_string(),
+            data: None,
+        })
     }
 
     pub fn ok() -> Self {
-        Self {
-            0: Res {
-                code: 200,
-                msg: "成功".to_string(),
-                data: None,
-            },
-        }
+        Self(Res {
+            code: 200,
+            msg: "成功".to_string(),
+            data: None,
+        })
     }
 
     pub fn fail() -> Self {
-        Self {
-            0: Res {
-                code: 500,
-                msg: "服务器异常".to_string(),
-                data: None,
-            },
-        }
+        Self(Res {
+            code: 500,
+            msg: "服务器异常".to_string(),
+            data: None,
+        })
     }
 
     pub fn with_code(mut self, code: u32) -> Self {

@@ -186,8 +186,8 @@ impl Generator {
 
     ///  处理路径，当路径不以 / 结尾时，自动添加 /
     fn deal_path(&mut self) {
-        if !self.path.is_empty() && !self.path.ends_with("/") {
-            self.path.push_str("/")
+        if !self.path.is_empty() && !self.path.ends_with('/') {
+            self.path.push('/')
         }
     }
 
@@ -209,7 +209,7 @@ impl Generator {
             }
         };
 
-        let table_names = self.table_names.split(",").collect::<Vec<_>>();
+        let table_names = self.table_names.split(',').collect::<Vec<_>>();
 
         let tables = tobj.tables(&table_names).await;
         if tables.is_empty() {

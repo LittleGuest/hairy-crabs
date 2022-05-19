@@ -4,6 +4,7 @@
 /tps
 crab-excel/*.xlsx
 *.log
+/model
 
 crab-ui/.DS_Store
 crab-ui/node_modules

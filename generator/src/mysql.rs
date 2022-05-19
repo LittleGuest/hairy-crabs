@@ -126,7 +126,7 @@ impl From<&TableColumn> for crate::TableColumn {
             },
             column_type: c.column_type.clone(),
             comment: c.column_comment.clone(),
-            field_type: Some(ty.clone()),
+            field_type: Some(ty),
             multi_world: Some({
                 c.column_name
                     .clone()

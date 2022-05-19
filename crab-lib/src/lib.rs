@@ -9,7 +9,8 @@ pub use jsonwebtoken;
 // pub use lazy_static;
 pub use log;
 pub use rbatis;
-pub use redis;
+// pub use redis;
+pub use simple_redis as redis;
 // #[macro_use]
 // pub extern crate serde;
 pub extern crate serde;

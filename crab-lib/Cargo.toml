@@ -30,7 +30,8 @@ anyhow = "1.0.51"
 thiserror = "1.0.30"
 
 # Resis驱动
-redis = { version = "0.21.4", features = ["tokio-comp"] }
+# redis = { version = "0.21.4", features = ["tokio-comp"] }
+simple_redis = "0.6.1"
 
 # JWT
 jsonwebtoken = { version = "7.2.0" }
