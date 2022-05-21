@@ -1,10 +1,21 @@
 //! 公共库
 
+use serde::{Deserialize, Serialize};
+
 pub mod consts;
 pub mod enums;
 pub mod error;
 pub mod jwt;
 pub mod result;
+
+/// 分页
+#[derive(Serialize, Deserialize)]
+pub struct PageDto {
+    /// current page index
+    pub page_no: u64,
+    /// default 10
+    pub page_size: u64,
+}
 
 // /// 返回状态码
 // /// 操作成功

@@ -38,6 +38,12 @@ pub struct SysConfig {
     pub del_flag: Option<i8>,
 }
 
+impl std::fmt::Display for SysConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{}", serde_json::json!(self))
+    }
+}
+
 #[crab_lib::async_trait::async_trait]
 impl Mapper for SysConfig {
     async fn save(&self) -> CrabResult<Option<i64>> {

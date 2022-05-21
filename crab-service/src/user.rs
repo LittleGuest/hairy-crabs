@@ -3,9 +3,9 @@
 use std::collections::HashSet;
 
 use crab_cache::{ConfigUtil, RedisCache};
-use crab_common::{consts, error::CrabError, jwt::JWTToken, result::CrabResult};
-use crab_lib::rbatis::snowflake::new_snowflake_id;
-use crab_model::{Mapper, SysLoginLog, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto};
+use crab_common::{consts, error::CrabError, jwt::TokenData, result::CrabResult};
+use crab_lib::rbatis::{snowflake::new_snowflake_id, Page};
+use crab_model::{Mapper, SysLoginLog, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto, UserReq};
 use crab_util::password_encoder::PasswordEncoder;
 
 #[derive(Clone, Copy)]
@@ -34,13 +34,13 @@ impl SysLogin {
                 return Err(CrabError::UsernameOrPasswordError);
             }
 
-            let jwt_token = JWTToken {
+            let jwt_token = TokenData {
                 user_id: user.id.unwrap(),
                 account,
                 permissions: vec![],
                 role_ids: vec![],
                 // TODO 时间
-                // exp: 0,
+                exp: 1111111111111111,
             };
 
             let login_log = SysLoginLog {
@@ -148,5 +148,13 @@ impl SysLogin {
             login_log.save().await?;
             Err(CrabError::CaptchaExpireError)
         }
+    }
+}
+
+pub struct UserService;
+
+impl UserService {
+    pub async fn page(req: UserReq) -> CrabResult<Page<SysUser>> {
+        SysUser::page(req).await
     }
 }

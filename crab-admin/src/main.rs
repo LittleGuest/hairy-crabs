@@ -1,7 +1,7 @@
 use crab_admin::{middleware, tool_gen, user};
 use crab_config::APP;
 use crab_lib::anyhow;
-use poem::{get, listener::TcpListener, post, EndpointExt, Route, Server};
+use poem::{listener::TcpListener, post, EndpointExt, Route, Server};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -11,9 +11,10 @@ async fn main() -> anyhow::Result<()> {
 
     let route = Route::new()
         .at("/login", post(user::login))
-        .at("/api/getInfo", get(user::user_info))
-        .at("/api/getRouters", get(user::routers))
-        .at("/api/tool/gen/list", get(tool_gen::gen_list))
+        .at("/api/user/getInfo", post(user::user_info))
+        .at("/api/user/getRouters", post(user::routers))
+        .at("/api/user/page", post(user::page))
+        .at("/api/tool/gen/list", post(tool_gen::gen_list))
         .around(middleware::auth_middleware)
         .around(middleware::token_middleware)
         .with(middleware::LogMilldeware);

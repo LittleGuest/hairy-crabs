@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use crab_common::{error::CrabError, result::CrabResult};
-use rbatis::{crud::CRUD, crud_table};
+use crab_common::{error::CrabError, result::CrabResult, PageDto};
+use rbatis::{crud::CRUD, crud_table, Page, PageRequest};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -58,6 +58,12 @@ pub struct SysUser {
     pub update_at: Option<rbatis::DateTimeNative>,
     /// 删除标志（0代表存在 1代表删除）
     pub del_flag: Option<i8>,
+}
+
+impl std::fmt::Display for SysUser {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{}", serde_json::json!(self))
+    }
 }
 
 #[crab_lib::async_trait::async_trait]
@@ -127,8 +133,6 @@ impl Mapper for SysUser {
     }
 }
 
-impl SysUser {}
-
 impl SysUser {
     pub async fn get_by_username(account: &str) -> CrabResult<Option<Self>> {
         let user = RB.fetch_by_column("account", account).await.map_err(|e| {
@@ -145,6 +149,16 @@ impl SysUser {
         })?;
         Ok(user)
     }
+
+    pub async fn page(req: UserReq) -> CrabResult<Page<Self>> {
+        let pr = PageRequest::new(req.page.page_no, req.page.page_size);
+        let w = RB.new_wrapper();
+        let res = RB.fetch_page_by_wrapper(w, &pr).await.map_err(|e| {
+            log::error!("Mapper::fetch_by_id error {}", e);
+            CrabError::SqlError
+        })?;
+        Ok(res)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -159,7 +173,7 @@ pub struct LoginBody {
     pub uuid: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LoginUserDto {
     /// 用户信息
     pub user: SysUser,
@@ -167,7 +181,7 @@ pub struct LoginUserDto {
     pub access_token: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UserInfoDto {
     /// 用户信息
     pub user: SysUser,
@@ -175,4 +189,9 @@ pub struct UserInfoDto {
     pub roles: HashSet<String>,
     /// 权限集合
     pub permissions: HashSet<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UserReq {
+    page: PageDto,
 }

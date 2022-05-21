@@ -17,6 +17,12 @@ pub struct {{ struct_name }} { {% if has_columns %}{% for column in columns %}
     pub {{column.name}}: Option<{{column.field_type}}>,{% endfor %}{% endif %}
 }
 
+impl std::fmt::Display for {{ struct_name }} {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{}", serde_json::json!(self))
+    }
+}
+
 #[crab_lib::async_trait::async_trait]
 impl Mapper for {{ struct_name }} {
     async fn save(&self) -> CrabResult<Option<i64>> {

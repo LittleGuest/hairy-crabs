@@ -1,4 +1,4 @@
-use crab_common::jwt::JWTToken;
+use crab_common::jwt::TokenData;
 use crab_config::APP;
 use poem::{async_trait, Endpoint, IntoResponse, Middleware, Request, Response, Result};
 
@@ -14,18 +14,23 @@ pub async fn token_middleware<E: Endpoint>(next: E, mut req: Request) -> Result<
     let uri = req.uri().path();
     // 白名单不校验token
     let wl = APP.white_list.to_vec();
-    if !wl.is_empty() && wl.iter().any(|u| uri.starts_with(u)) {
+    if !wl.is_empty() && wl.iter().all(|u| !uri.starts_with(u)) {
         if let Some(value) = req
             .headers()
             .get("X-Token")
             .and_then(|value| value.to_str().ok())
         {
-            match JWTToken::verify(value) {
+            match TokenData::verify(value) {
                 Ok(token) => {
                     req.extensions_mut().insert(token);
                 }
                 Err(e) => {
                     log::error!("验证token有效失败: uri = {uri}, token = {value}, {e}");
+                    // FIXME
+                    return Err(poem::Error::from_string(
+                        e.to_string(),
+                        poem::http::StatusCode::BAD_REQUEST,
+                    ));
                 }
             }
         }
