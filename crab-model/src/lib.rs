@@ -53,6 +53,7 @@ pub trait Mapper: CRUDTable + Sized {
     async fn save(&self) -> CrabResult<Option<i64>>;
     async fn save_batch(models: &[Self]) -> CrabResult<u64>;
     async fn update(&self) -> CrabResult<u64>;
+    async fn update_batch(models: &[Self]) -> CrabResult<u64>;
     async fn remove_by_id(id: i64) -> CrabResult<u64>;
     async fn remove_batch_by_ids(ids: &[i64]) -> CrabResult<u64>;
     async fn list() -> CrabResult<Vec<Self>>;

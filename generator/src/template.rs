@@ -1,3 +1,28 @@
+/// mod.rs 文件模板
+pub const MOD_TEMPLATE: &str = r#"
+use crab_common::{error::CrabError, result::CrabResult};
+use rbatis::{crud::CRUDTable, Page, PageRequest};
+
+{% for table_name, _ in table_names %}
+mod {{table_name}};
+pub use {{table_name}}::*;
+{% endfor %}
+
+#[crab_lib::async_trait::async_trait]
+pub trait Mapper: CRUDTable + Sized {
+    async fn save(&self) -> CrabResult<Option<i64>>;
+    async fn save_batch(models: &[Self]) -> CrabResult<u64>;
+    async fn update(&self) -> CrabResult<u64>;
+    async fn update_batch(models: &[Self]) -> CrabResult<u64>;
+    async fn remove_by_id(id: i64) -> CrabResult<u64>;
+    async fn remove_batch_by_ids(ids: &[i64]) -> CrabResult<u64>;
+    async fn list() -> CrabResult<Vec<Self>>;
+    async fn fetch_by_id(id: i64) -> CrabResult<Option<Self>>;
+    async fn fetch_by_ids(ids: &[i64]) -> CrabResult<Vec<Self>>;
+    // async fn page(pr: PageRequest) -> Page<Self>;
+}
+"#;
+
 /// 模型模板
 pub const MODEL_TEMPLATE: &str = r#"
 use crab_common::{error::CrabError, result::CrabResult};
@@ -47,6 +72,12 @@ impl Mapper for {{ struct_name }} {
         })?;
         Ok(res)
     }
+    async fn update_batch(models: &[Self]) -> CrabResult<u64> {
+        for m in models.iter() {
+            m.update().await;
+        }
+        Ok(0)
+    }
     async fn remove_by_id(id: i64) -> CrabResult<u64> {
         let res = RB
             .remove_by_column::<Self, _>("id", id)
@@ -91,28 +122,4 @@ impl Mapper for {{ struct_name }} {
 }
 
 impl {{ struct_name }} {}
-"#;
-
-/// mod.rs 文件模板
-pub const MOD_TEMPLATE: &str = r#"
-use crab_common::{error::CrabError, result::CrabResult};
-use rbatis::{crud::CRUDTable, Page, PageRequest};
-
-{% for table_name, _ in table_names %}
-mod {{table_name}};
-pub use {{table_name}}::*;
-{% endfor %}
-
-#[crab_lib::async_trait::async_trait]
-pub trait Mapper: CRUDTable + Sized {
-    async fn save(&self) -> CrabResult<Option<i64>>;
-    async fn save_batch(models: &[Self]) -> CrabResult<u64>;
-    async fn update(&self) -> CrabResult<u64>;
-    async fn remove_by_id(id: i64) -> CrabResult<u64>;
-    async fn remove_batch_by_ids(ids: &[i64]) -> CrabResult<u64>;
-    async fn list() -> CrabResult<Vec<Self>>;
-    async fn fetch_by_id(id: i64) -> CrabResult<Option<Self>>;
-    async fn fetch_by_ids(ids: &[i64]) -> CrabResult<Vec<Self>>;
-    // async fn page(pr: PageRequest) -> Page<Self>;
-}
 "#;

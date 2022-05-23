@@ -26,6 +26,9 @@ pub enum CrabError {
     #[error("未知错误")]
     Unknown,
 
+    #[error("参数校验错误: {0}")]
+    ValidationError(&'static str),
+
     #[error(transparent)]
     AnyhowError(#[from] anyhow::Error),
 }

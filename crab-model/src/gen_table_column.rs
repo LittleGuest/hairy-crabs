@@ -122,6 +122,12 @@ impl Mapper for GenTableColumn {
         })?;
         Ok(res)
     }
+    async fn update_batch(models: &[Self]) -> CrabResult<u64> {
+        for m in models.iter() {
+            m.update().await;
+        }
+        Ok(0)
+    }
     async fn remove_by_id(id: i64) -> CrabResult<u64> {
         let res = RB
             .remove_by_column::<Self, _>("id", id)

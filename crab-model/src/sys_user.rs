@@ -1,7 +1,10 @@
 use std::collections::HashSet;
 
 use crab_common::{error::CrabError, result::CrabResult, PageDto};
-use rbatis::{crud::CRUD, crud_table, Page, PageRequest};
+use rbatis::{
+    crud::{CRUDTable, CRUD},
+    crud_table, Page, PageRequest,
+};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -90,6 +93,12 @@ impl Mapper for SysUser {
         })?;
         Ok(res)
     }
+    async fn update_batch(models: &[Self]) -> CrabResult<u64> {
+        for m in models.iter() {
+            m.update().await;
+        }
+        Ok(0)
+    }
     async fn remove_by_id(id: i64) -> CrabResult<u64> {
         let res = RB
             .remove_by_column::<Self, _>("id", id)
@@ -150,13 +159,33 @@ impl SysUser {
         Ok(user)
     }
 
-    pub async fn page(req: UserReq) -> CrabResult<Page<Self>> {
-        let pr = PageRequest::new(req.page.page_no, req.page.page_size);
-        let w = RB.new_wrapper();
-        let res = RB.fetch_page_by_wrapper(w, &pr).await.map_err(|e| {
-            log::error!("Mapper::fetch_by_id error {}", e);
-            CrabError::SqlError
-        })?;
+    pub async fn page(req: &UserReq) -> CrabResult<Page<Self>> {
+        let mut sql = String::new();
+        sql.push_str(
+            format!(
+                " select {} from {} where 1 = 1 ",
+                Self::table_columns(),
+                Self::table_name()
+            )
+            .as_str(),
+        );
+        if let Some(name) = &req.name {
+            sql.push_str(format!(" and name like '%{name}%' ").as_str());
+        }
+        if let Some(account) = &req.account {
+            sql.push_str(format!(" and account like '%{account}%' ").as_str());
+        }
+        if let Some(status) = &req.status {
+            sql.push_str(format!(" and status = {status} ").as_str());
+        }
+
+        let res = RB
+            .fetch_page(&sql, vec![], &req.new_page_req())
+            .await
+            .map_err(|e| {
+                log::error!("Mapper::fetch_by_id error {}", e);
+                CrabError::SqlError
+            })?;
         Ok(res)
     }
 }
@@ -193,5 +222,26 @@ pub struct UserInfoDto {
 
 #[derive(Serialize, Deserialize)]
 pub struct UserReq {
-    page: PageDto,
+    page: Option<PageDto>,
+
+    /// 姓名
+    pub name: Option<String>,
+    /// 帐号
+    pub account: Option<String>,
+    /// 帐号状态（0正常 1停用）
+    pub status: Option<i8>,
+    /// 创建时间
+    pub create_at: Option<rbatis::DateTimeNative>,
+    /// 更新时间
+    pub update_at: Option<rbatis::DateTimeNative>,
+}
+
+impl UserReq {
+    pub fn new_page_req(&self) -> PageRequest {
+        if let Some(page) = &self.page {
+            PageRequest::new_option(&page.page_no, &page.page_size)
+        } else {
+            PageRequest::default()
+        }
+    }
 }

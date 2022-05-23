@@ -4,16 +4,21 @@ use std::collections::HashSet;
 
 use crab_cache::{ConfigUtil, RedisCache};
 use crab_common::{consts, error::CrabError, jwt::TokenData, result::CrabResult};
-use crab_lib::rbatis::{snowflake::new_snowflake_id, Page};
+use crab_lib::{
+    log,
+    rbatis::{snowflake::new_snowflake_id, Page},
+    validator::Validate,
+};
 use crab_model::{Mapper, SysLoginLog, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto, UserReq};
 use crab_util::password_encoder::PasswordEncoder;
 
 #[derive(Clone, Copy)]
-pub struct SysLogin;
+pub struct SysLoginSrv;
 
-impl SysLogin {
+impl SysLoginSrv {
     /// 登录验证
     pub async fn login(
+        &self,
         account: String,
         password: String,
         code: String,
@@ -57,7 +62,7 @@ impl SysLogin {
     }
 
     /// 获取用户信息
-    pub async fn user_info(user_id: i64) -> CrabResult<UserInfoDto> {
+    pub async fn user_info(&self, user_id: i64) -> CrabResult<UserInfoDto> {
         if let Some(mut user) = SysUser::get_by_id(user_id).await? {
             // TODO 获取角色集合
             // TODO 获取权限集合
@@ -74,7 +79,7 @@ impl SysLogin {
     }
 
     /// 获取用户路由信息
-    pub async fn routers(user_id: i64) -> CrabResult<HashSet<SysMenuTreeDto>> {
+    pub async fn routers(&self, user_id: i64) -> CrabResult<HashSet<SysMenuTreeDto>> {
         let menus = if Self::is_admin(user_id) {
             SysMenu::menus().await?
         } else {
@@ -151,10 +156,52 @@ impl SysLogin {
     }
 }
 
-pub struct UserService;
+pub struct UserSrv;
 
-impl UserService {
-    pub async fn page(req: UserReq) -> CrabResult<Page<SysUser>> {
-        SysUser::page(req).await
+impl UserSrv {
+    pub async fn page(&self, req: UserReq) -> CrabResult<Page<SysUser>> {
+        let mut page = SysUser::page(&req).await?;
+        page.records.iter_mut().for_each(|u| u.password = None);
+        Ok(page)
+    }
+
+    pub async fn save(&self, mut user: SysUser) -> CrabResult<SysUser> {
+        user.validate().map_err(|e| {
+            log::error!("validation error: {e}");
+            CrabError::ValidationError("")
+        })?;
+        user.id = user.save().await?;
+        Ok(user)
+    }
+
+    pub async fn update(&self, user: SysUser) -> CrabResult<SysUser> {
+        user.validate().map_err(|e| {
+            log::error!("validation error: {e}");
+            CrabError::ValidationError("")
+        })?;
+        user.update().await?;
+        Ok(user)
+    }
+
+    pub async fn update_batch(&self, users: &[SysUser]) -> CrabResult<u64> {
+        for user in users.iter() {
+            user.validate().map_err(|e| {
+                log::error!("validation error: {e}");
+                CrabError::ValidationError("")
+            })?;
+        }
+        SysUser::update_batch(users).await
+    }
+
+    pub async fn delete(&self, user: SysUser) -> CrabResult<u64> {
+        if let Some(uid) = user.id {
+            SysUser::remove_by_id(uid).await
+        } else {
+            Ok(0)
+        }
+    }
+
+    pub async fn delete_batch(&self, ids: &[i64]) -> CrabResult<u64> {
+        SysUser::remove_batch_by_ids(ids).await
     }
 }

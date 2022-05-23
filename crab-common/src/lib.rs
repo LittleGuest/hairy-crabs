@@ -11,10 +11,8 @@ pub mod result;
 /// 分页
 #[derive(Serialize, Deserialize)]
 pub struct PageDto {
-    /// current page index
-    pub page_no: u64,
-    /// default 10
-    pub page_size: u64,
+    pub page_no: Option<u64>,
+    pub page_size: Option<u64>,
 }
 
 // /// 返回状态码
