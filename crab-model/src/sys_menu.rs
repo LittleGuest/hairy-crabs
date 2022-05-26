@@ -1,7 +1,10 @@
 use std::collections::HashSet;
 
-use crab_common::{error::CrabError, result::CrabResult};
-use rbatis::{crud::CRUD, crud_table};
+use crab_common::{error::CrabError, result::CrabResult, PageDto};
+use rbatis::{
+    crud::{CRUDTable, CRUD},
+    crud_table, Page, PageRequest,
+};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -9,7 +12,9 @@ use crate::{Mapper, RB};
 
 /// 菜单信息表
 #[crud_table]
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Validate, Hash)]
+#[derive(
+    Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Validate,
+)]
 #[serde(rename_all(serialize = "camelCase"))]
 pub struct SysMenu {
     /// 主键ID
@@ -105,10 +110,11 @@ impl Mapper for SysMenu {
         Ok(res)
     }
     async fn update_batch(models: &[Self]) -> CrabResult<u64> {
+        let mut res = 0;
         for m in models.iter() {
-            m.update().await;
+            res += m.update().await?;
         }
-        Ok(0)
+        Ok(res)
     }
     async fn remove_by_id(id: i64) -> CrabResult<u64> {
         let res = RB
@@ -153,9 +159,104 @@ impl Mapper for SysMenu {
     }
 }
 
-impl SysMenu {}
-
 impl SysMenu {
+    pub async fn page(req: &MenuReq) -> CrabResult<Page<Self>> {
+        let mut sql = String::new();
+        sql.push_str(
+            format!(
+                " select {} from {} where 1 = 1 ",
+                Self::table_columns(),
+                Self::table_name()
+            )
+            .as_str(),
+        );
+
+        if let Some(id) = &req.id {
+            sql.push_str(&format!(" and {} = {} ", "id", id));
+        }
+
+        if let Some(menu_code) = &req.menu_code {
+            sql.push_str(&format!(" and {} like '%{}%' ", "menu_code", menu_code));
+        }
+
+        if let Some(menu_name) = &req.menu_name {
+            sql.push_str(&format!(" and {} like '%{}%' ", "menu_name", menu_name));
+        }
+
+        if let Some(pid) = &req.pid {
+            sql.push_str(&format!(" and {} = {} ", "pid", pid));
+        }
+
+        if let Some(sort) = &req.sort {
+            sql.push_str(&format!(" and {} = {} ", "sort", sort));
+        }
+
+        if let Some(path) = &req.path {
+            sql.push_str(&format!(" and {} like '%{}%' ", "path", path));
+        }
+
+        if let Some(component) = &req.component {
+            sql.push_str(&format!(" and {} like '%{}%' ", "component", component));
+        }
+
+        if let Some(is_frame) = &req.is_frame {
+            sql.push_str(&format!(" and {} = {} ", "is_frame", is_frame));
+        }
+
+        if let Some(is_cache) = &req.is_cache {
+            sql.push_str(&format!(" and {} = {} ", "is_cache", is_cache));
+        }
+
+        if let Some(menu_type) = &req.menu_type {
+            sql.push_str(&format!(" and {} like '%{}%' ", "menu_type", menu_type));
+        }
+
+        if let Some(visible) = &req.visible {
+            sql.push_str(&format!(" and {} = {} ", "visible", visible));
+        }
+
+        if let Some(status) = &req.status {
+            sql.push_str(&format!(" and {} = {} ", "status", status));
+        }
+
+        if let Some(perms) = &req.perms {
+            sql.push_str(&format!(" and {} like '%{}%' ", "perms", perms));
+        }
+
+        if let Some(remark) = &req.remark {
+            sql.push_str(&format!(" and {} like '%{}%' ", "remark", remark));
+        }
+
+        if let Some(parent_ids) = &req.parent_ids {
+            sql.push_str(&format!(" and {} like '%{}%' ", "parent_ids", parent_ids));
+        }
+
+        if let Some(tree_sort) = &req.tree_sort {
+            sql.push_str(&format!(" and {} = {} ", "tree_sort", tree_sort));
+        }
+
+        if let Some(tree_sorts) = &req.tree_sorts {
+            sql.push_str(&format!(" and {} like '%{}%' ", "tree_sorts", tree_sorts));
+        }
+
+        if let Some(tree_level) = &req.tree_level {
+            sql.push_str(&format!(" and {} = {} ", "tree_level", tree_level));
+        }
+
+        if let Some(tree_leaf) = &req.tree_leaf {
+            sql.push_str(&format!(" and {} = {} ", "tree_leaf", tree_leaf));
+        }
+
+        let res = RB
+            .fetch_page(&sql, vec![], &req.new_page_req())
+            .await
+            .map_err(|e| {
+                log::error!("page error {}", e);
+                CrabError::SqlError
+            })?;
+        Ok(res)
+    }
+
     /// 根据用户ID查询菜单树信息
     pub async fn get_menu_by_user_id(_user_id: i64) -> Result<HashSet<Self>, CrabError> {
         let sql = "
@@ -254,6 +355,65 @@ impl SysMenu {
             .await
             .map_err(|_e| CrabError::ServerError("根据用户ID查询菜单树信息"));
         menus
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MenuReq {
+    /// 开始时间
+    pub start_at: Option<u64>,
+    /// 结束时间
+    pub end_at: Option<u64>,
+    /// 分页参数
+    pub page: Option<PageDto>,
+
+    /// 主键ID
+    pub id: Option<i64>,
+    /// 菜单编码
+    pub menu_code: Option<String>,
+    /// 菜单名称
+    pub menu_name: Option<String>,
+    /// 父菜单ID
+    pub pid: Option<i64>,
+    /// 显示顺序
+    pub sort: Option<i32>,
+    /// 路由地址
+    pub path: Option<String>,
+    /// 组件路径
+    pub component: Option<String>,
+    /// 是否为外链（0是 1否）
+    pub is_frame: Option<i32>,
+    /// 是否缓存（0缓存 1不缓存）
+    pub is_cache: Option<i32>,
+    /// 菜单类型（M目录 C菜单 F按钮）
+    pub menu_type: Option<String>,
+    /// 菜单状态（0显示 1隐藏）
+    pub visible: Option<i8>,
+    /// 菜单状态（0正常 1停用）
+    pub status: Option<i8>,
+    /// 权限标识
+    pub perms: Option<String>,
+    /// 备注
+    pub remark: Option<String>,
+    /// 父id集合
+    pub parent_ids: Option<String>,
+    /// 排序
+    pub tree_sort: Option<i32>,
+    /// 排序集合
+    pub tree_sorts: Option<String>,
+    /// 层级
+    pub tree_level: Option<i32>,
+    /// 是否子节点（0是 1否）
+    pub tree_leaf: Option<i8>,
+}
+
+impl MenuReq {
+    pub fn new_page_req(&self) -> PageRequest {
+        if let Some(page) = &self.page {
+            PageRequest::new_option(&page.page_no, &page.page_size)
+        } else {
+            PageRequest::default()
+        }
     }
 }
 

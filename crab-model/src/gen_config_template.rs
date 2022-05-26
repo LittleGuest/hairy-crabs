@@ -7,7 +7,9 @@ use crate::{Mapper, RB};
 
 /// 模板配置表
 #[crud_table]
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Validate)]
+#[derive(
+    Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Validate,
+)]
 #[serde(rename_all(serialize = "camelCase"))]
 pub struct GenConfigTemplate {
     ///
@@ -86,10 +88,11 @@ impl Mapper for GenConfigTemplate {
         Ok(res)
     }
     async fn update_batch(models: &[Self]) -> CrabResult<u64> {
+        let mut res = 0;
         for m in models.iter() {
-            m.update().await;
+            res += m.update().await?;
         }
-        Ok(0)
+        Ok(res)
     }
     async fn remove_by_id(id: i64) -> CrabResult<u64> {
         let res = RB

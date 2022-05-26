@@ -14,6 +14,9 @@ pub use config_util::ConfigUtil;
 mod redis_cache;
 pub use redis_cache::RedisCache;
 
+// mod config_cache;
+// pub use config_cache::ConfigCache;
+
 /// 缓存接口
 pub trait CacheUtil {
     /// 获取缓存键
@@ -34,6 +37,7 @@ lazy_static! {
     static ref REDIS: Arc<Mutex<Client>> = client();
 }
 
+/// FIXME
 fn client() -> Arc<Mutex<Client>> {
     let client = redis::create(APP.redis_url.as_str()).expect("获取 Redis Client 失败");
     Arc::new(Mutex::new(client))

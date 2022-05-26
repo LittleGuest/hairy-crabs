@@ -129,7 +129,7 @@ pub struct Generator {
     #[clap(short('D'))]
     pub database: String,
     /// 代码生成的路径
-    #[clap(default_value = "model/")]
+    #[clap(default_value = "target/models/")]
     pub path: String,
     /// 指定要生成代码的表名，多个用英文逗号拼接，为空表示全部
     #[clap(short('t'), long, default_value = "")]

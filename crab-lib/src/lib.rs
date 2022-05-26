@@ -5,8 +5,9 @@ pub extern crate lazy_static;
 pub extern crate serde_json;
 
 // pub use anyhow;
-pub use jsonwebtoken;
 // pub use lazy_static;
+pub use async_static;
+pub use jsonwebtoken;
 pub use log;
 pub use rbatis;
 // pub use redis;

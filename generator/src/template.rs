@@ -25,8 +25,11 @@ pub trait Mapper: CRUDTable + Sized {
 
 /// 模型模板
 pub const MODEL_TEMPLATE: &str = r#"
-use crab_common::{error::CrabError, result::CrabResult};
-use rbatis::{crud::CRUD, crud_table};
+use crab_common::{error::CrabError, result::CrabResult, PageDto};
+use rbatis::{
+    crud::{CRUDTable, CRUD},
+    crud_table, Page, PageRequest,
+};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -34,7 +37,9 @@ use crate::{Mapper, RB};
 
 /// {{table.comment}}
 #[crud_table]
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Validate)]
+#[derive(
+    Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Validate,
+)]
 #[serde(rename_all(serialize = "camelCase"))]
 pub struct {{ struct_name }} { {% if has_columns %}{% for column in columns %}
     /// {{column.comment}}
@@ -73,10 +78,11 @@ impl Mapper for {{ struct_name }} {
         Ok(res)
     }
     async fn update_batch(models: &[Self]) -> CrabResult<u64> {
+        let mut res = 0;
         for m in models.iter() {
-            m.update().await;
+            res += m.update().await?;
         }
-        Ok(0)
+        Ok(res)
     }
     async fn remove_by_id(id: i64) -> CrabResult<u64> {
         let res = RB
@@ -121,5 +127,61 @@ impl Mapper for {{ struct_name }} {
     }
 }
 
-impl {{ struct_name }} {}
+impl {{ struct_name }} {
+    pub async fn page(req: &{{ struct_name }}Req) -> CrabResult<Page<Self>> {
+        let mut sql = String::new();
+        sql.push_str(
+            format!(
+                " select {} from {} where 1 = 1 ",
+                Self::table_columns(),
+                Self::table_name()
+            )
+            .as_str(),
+        );
+
+        {% if has_columns %}{% for column in columns %}
+        if let Some({{column.name}}) = &req.{{column.name}} {
+            {%if column.field_type == "String"%}
+                sql.push_str(&format!(" and {} like '%{}%' ",  "{{column.name}}", {{column.name}}));
+            {%else%}
+                sql.push_str(&format!(" and {} = {} ",  "{{column.name}}", {{column.name}}));
+            {%endif%}
+        }
+        {% endfor %}{% endif %}
+
+        let res = RB
+            .fetch_page(&sql, vec![], &req.new_page_req())
+            .await
+            .map_err(|e| {
+                log::error!("page error {}", e);
+                CrabError::SqlError
+            })?;
+        Ok(res)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct {{ struct_name }}Req { 
+    /// 开始时间
+    pub start_at: Option<u64>,
+    /// 结束时间
+    pub end_at: Option<u64>,
+    /// 分页参数
+    pub page: Option<PageDto>,
+
+    {% if has_columns %}{% for column in columns %}
+    /// {{column.comment}}
+    pub {{column.name}}: Option<{{column.field_type}}>,{% endfor %}{% endif %}
+}
+
+impl {{ struct_name }}Req {
+    pub fn new_page_req(&self) -> PageRequest {
+        if let Some(page) = &self.page {
+            PageRequest::new_option(&page.page_no, &page.page_size)
+        } else {
+            PageRequest::default()
+        }
+    }
+}
+
 "#;

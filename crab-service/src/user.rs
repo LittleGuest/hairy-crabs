@@ -1,5 +1,3 @@
-//! 登录验证
-
 use std::collections::HashSet;
 
 use crab_cache::{ConfigUtil, RedisCache};
@@ -9,7 +7,9 @@ use crab_lib::{
     rbatis::{snowflake::new_snowflake_id, Page},
     validator::Validate,
 };
-use crab_model::{Mapper, SysLoginLog, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto, UserReq};
+use crab_model::{
+    Mapper, ResetPwdReq, SysLoginLog, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto, UserReq,
+};
 use crab_util::password_encoder::PasswordEncoder;
 
 #[derive(Clone, Copy)]
@@ -203,5 +203,14 @@ impl UserSrv {
 
     pub async fn delete_batch(&self, ids: &[i64]) -> CrabResult<u64> {
         SysUser::remove_batch_by_ids(ids).await
+    }
+
+    pub async fn reset_pwd(&self, req: ResetPwdReq) -> CrabResult<u64> {
+        if let Some(user) = SysUser::fetch_by_id(req.id).await? {
+            // TODO 密码加密校验
+            SysUser::reset_pwd(&user.account.unwrap_or("".to_string()), &req.password).await
+        } else {
+            Ok(0)
+        }
     }
 }

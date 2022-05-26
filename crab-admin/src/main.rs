@@ -1,4 +1,4 @@
-use crab_admin::{middleware, tool_gen, user};
+use crab_admin::{config, dict_data, dict_type, menu, middleware, tool_gen, user};
 use crab_config::APP;
 use crab_lib::anyhow;
 use poem::{listener::TcpListener, post, EndpointExt, Route, Server};
@@ -11,6 +11,7 @@ async fn main() -> anyhow::Result<()> {
 
     let route = Route::new()
         .at("/login", post(user::login))
+        //
         .at("/api/user/getInfo", post(user::user_info))
         .at("/api/user/getRouters", post(user::routers))
         .at("/api/user/page", post(user::page))
@@ -19,6 +20,50 @@ async fn main() -> anyhow::Result<()> {
         .at("/api/user/updateBatch", post(user::update_batch))
         .at("/api/user/delete", post(user::delete))
         .at("/api/user/deleteBatch", post(user::delete_batch))
+        .at("/api/user/resetPwd", post(user::reset_pwd))
+        .at("/api/user/import", post(user::import))
+        .at("/api/user/export", post(user::export))
+        // 参数配置
+        .at("/api/config/list", post(config::list))
+        .at("/api/config/page", post(config::page))
+        .at("/api/config/getById", post(config::get_by_id))
+        .at("/api/config/save", post(config::save))
+        .at("/api/config/update", post(config::update))
+        .at("/api/config/delete", post(config::delete))
+        .at("/api/config/deleteBatch", post(config::delete_batch))
+        .at("/api/config/refreshCache", post(config::refresh_cache))
+        .at("/api/config/export", post(config::export))
+        // 字典类型
+        .at("/api/dictType/list", post(dict_type::list))
+        .at("/api/dictType/page", post(dict_type::page))
+        .at("/api/dictType/getById", post(dict_type::get_by_id))
+        .at("/api/dictType/save", post(dict_type::save))
+        .at("/api/dictType/update", post(dict_type::update))
+        .at("/api/dictType/delete", post(dict_type::delete))
+        .at("/api/dictType/deleteBatch", post(dict_type::delete_batch))
+        .at("/api/dictType/refreshCache", post(dict_type::refresh_cache))
+        .at("/api/dictType/export", post(dict_type::export))
+        // 字典数据
+        .at("/api/dictData/list", post(dict_data::list))
+        .at("/api/dictData/page", post(dict_data::page))
+        .at("/api/dictData/getById", post(dict_data::get_by_id))
+        .at("/api/dictData/save", post(dict_data::save))
+        .at("/api/dictData/update", post(dict_data::update))
+        .at("/api/dictData/delete", post(dict_data::delete))
+        .at("/api/dictData/deleteBatch", post(dict_data::delete_batch))
+        .at("/api/dictData/refreshCache", post(dict_data::refresh_cache))
+        .at("/api/dictData/export", post(dict_data::export))
+        // 菜单配置
+        .at("/api/menu/list", post(menu::list))
+        .at("/api/menu/page", post(menu::page))
+        .at("/api/menu/getById", post(menu::get_by_id))
+        .at("/api/menu/save", post(menu::save))
+        .at("/api/menu/update", post(menu::update))
+        .at("/api/menu/delete", post(menu::delete))
+        .at("/api/menu/deleteBatch", post(menu::delete_batch))
+        .at("/api/menu/refreshCache", post(menu::refresh_cache))
+        .at("/api/menu/export", post(menu::export))
+        //
         .at("/api/tool/gen/list", post(tool_gen::gen_list))
         .around(middleware::auth_middleware)
         .around(middleware::token_middleware)

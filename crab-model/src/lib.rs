@@ -22,6 +22,10 @@ mod sys_config;
 pub use sys_config::*;
 mod sys_login_log;
 pub use sys_login_log::*;
+mod sys_dict_type;
+pub use sys_dict_type::*;
+mod sys_dict_data;
+pub use sys_dict_data::*;
 
 lazy_static! {
     pub static ref RB: Rbatis = {

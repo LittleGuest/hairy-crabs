@@ -3,7 +3,7 @@ CREATE DATABASE `hairy-crab` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8
 -- `hairy-crab`.gen_config_template definition
 
 CREATE TABLE `gen_config_template` (
-  `id` bigint NOT NULL,
+  `id` bigint NOT NULL COMMENT 'ID',
   `template_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '模板名称',
   `function_author` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '作者',
   `function_author_email` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '邮箱',
@@ -92,7 +92,7 @@ CREATE TABLE `gen_table_column` (
 -- `hairy-crab`.sys_config definition
 
 CREATE TABLE `sys_config` (
-  `id` bigint NOT NULL COMMENT '用户ID',
+  `id` bigint NOT NULL COMMENT 'ID',
   `config_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '参数名称',
   `config_key` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '参数键名',
   `config_value` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '参数键值',
@@ -107,10 +107,52 @@ CREATE TABLE `sys_config` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='参数配置表';
 
 
+-- `hairy-crab`.sys_dict_data definition
+
+CREATE TABLE `sys_dict_data` (
+  `id` bigint NOT NULL COMMENT 'ID',
+  `dict_type` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '字典类型',
+  `code` bigint DEFAULT NULL COMMENT '字典编码',
+  `label` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '字典标签',
+  `value` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '字典键值',
+  `is_default` tinyint DEFAULT '0' COMMENT '是否默认（1是 0否）',
+  `sort` smallint DEFAULT '0' COMMENT '字典排序',
+  `css_class` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '样式属性（其他样式扩展）',
+  `table_class` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '表格回显样式',
+  `status` tinyint DEFAULT '0' COMMENT '状态（0正常 1停用）',
+  `remark` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '备注',
+  `create_by` bigint DEFAULT NULL COMMENT '创建者',
+  `create_at` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` bigint DEFAULT NULL COMMENT '更新者',
+  `update_at` datetime DEFAULT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
+  PRIMARY KEY (`id`),
+  KEY `dict_data_idx` (`dict_type`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='字典数据表';
+
+
+-- `hairy-crab`.sys_dict_type definition
+
+CREATE TABLE `sys_dict_type` (
+  `id` bigint NOT NULL COMMENT 'ID',
+  `name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '字典名称',
+  `type` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '字典类型',
+  `status` tinyint DEFAULT '0' COMMENT '状态（0正常 1停用）',
+  `remark` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '备注',
+  `create_by` bigint DEFAULT NULL COMMENT '创建者',
+  `create_at` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` bigint DEFAULT NULL COMMENT '更新者',
+  `update_at` datetime DEFAULT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `dict_type` (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='字典类型表';
+
+
 -- `hairy-crab`.sys_log definition
 
 CREATE TABLE `sys_log` (
-  `id` bigint NOT NULL COMMENT '主键ID',
+  `id` bigint NOT NULL COMMENT 'ID',
   `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '模块标题',
   `business_type` tinyint DEFAULT '0' COMMENT '业务类型（0其它 1新增 2修改 3删除）',
   `method` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '方法名称',
@@ -158,7 +200,7 @@ CREATE TABLE `sys_login_log` (
 -- `hairy-crab`.sys_menu definition
 
 CREATE TABLE `sys_menu` (
-  `id` bigint NOT NULL COMMENT '主键ID',
+  `id` bigint NOT NULL COMMENT 'ID',
   `menu_code` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '菜单编码',
   `menu_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '菜单名称',
   `pid` bigint DEFAULT '0' COMMENT '父菜单ID',
@@ -190,7 +232,7 @@ CREATE TABLE `sys_menu` (
 -- `hairy-crab`.sys_user definition
 
 CREATE TABLE `sys_user` (
-  `id` bigint NOT NULL COMMENT '用户ID',
+  `id` bigint NOT NULL COMMENT 'ID',
   `no` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '用户编号',
   `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '姓名',
   `account` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '帐号',

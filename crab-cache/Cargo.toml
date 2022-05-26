@@ -10,3 +10,5 @@ crab-config = { path = "../crab-config" }
 crab-common = { path = "../crab-common" }
 crab-model = { path = "../crab-model" }
 crab-lib = { path = "../crab-lib" }
+
+once_cell = "1.12.0"

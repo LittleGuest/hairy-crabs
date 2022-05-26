@@ -12,7 +12,9 @@ use crate::{Mapper, RB};
 
 /// 用户信息表
 #[crud_table]
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Validate)]
+#[derive(
+    Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Validate,
+)]
 #[serde(rename_all(serialize = "camelCase"))]
 pub struct SysUser {
     /// 用户ID
@@ -94,10 +96,11 @@ impl Mapper for SysUser {
         Ok(res)
     }
     async fn update_batch(models: &[Self]) -> CrabResult<u64> {
+        let mut res = 0;
         for m in models.iter() {
-            m.update().await;
+            res += m.update().await?;
         }
-        Ok(0)
+        Ok(res)
     }
     async fn remove_by_id(id: i64) -> CrabResult<u64> {
         let res = RB
@@ -183,10 +186,19 @@ impl SysUser {
             .fetch_page(&sql, vec![], &req.new_page_req())
             .await
             .map_err(|e| {
-                log::error!("Mapper::fetch_by_id error {}", e);
+                log::error!("page error {}", e);
                 CrabError::SqlError
             })?;
         Ok(res)
+    }
+
+    pub async fn reset_pwd(account: &str, pwd: &str) -> CrabResult<u64> {
+        let sql = format!("update sys_user set password = '{pwd}' where account = '{account}'");
+        let res = RB.exec(&sql, vec![]).await.map_err(|e| {
+            log::error!("reset_pwd error {}", e);
+            CrabError::SqlError
+        })?;
+        Ok(res.rows_affected)
     }
 }
 
@@ -222,7 +234,12 @@ pub struct UserInfoDto {
 
 #[derive(Serialize, Deserialize)]
 pub struct UserReq {
-    page: Option<PageDto>,
+    /// 开始时间
+    pub start_at: Option<u64>,
+    /// 结束时间
+    pub end_at: Option<u64>,
+    /// 分页参数
+    pub page: Option<PageDto>,
 
     /// 姓名
     pub name: Option<String>,
@@ -230,10 +247,6 @@ pub struct UserReq {
     pub account: Option<String>,
     /// 帐号状态（0正常 1停用）
     pub status: Option<i8>,
-    /// 创建时间
-    pub create_at: Option<rbatis::DateTimeNative>,
-    /// 更新时间
-    pub update_at: Option<rbatis::DateTimeNative>,
 }
 
 impl UserReq {
@@ -244,4 +257,12 @@ impl UserReq {
             PageRequest::default()
         }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ResetPwdReq {
+    /// 用户ID
+    pub id: i64,
+    /// 密码
+    pub password: String,
 }
