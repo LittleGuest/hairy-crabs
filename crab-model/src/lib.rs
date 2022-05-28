@@ -26,6 +26,10 @@ mod sys_dict_type;
 pub use sys_dict_type::*;
 mod sys_dict_data;
 pub use sys_dict_data::*;
+mod sys_user_role;
+pub use sys_user_role::*;
+mod sys_role;
+pub use sys_role::*;
 
 lazy_static! {
     pub static ref RB: Rbatis = {

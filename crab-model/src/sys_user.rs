@@ -162,7 +162,7 @@ impl SysUser {
         Ok(user)
     }
 
-    pub async fn page(req: &UserReq) -> CrabResult<Page<Self>> {
+    pub async fn page(req: &SysUserReq) -> CrabResult<Page<Self>> {
         let mut sql = String::new();
         sql.push_str(
             format!(
@@ -233,7 +233,7 @@ pub struct UserInfoDto {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct UserReq {
+pub struct SysUserReq {
     /// 开始时间
     pub start_at: Option<u64>,
     /// 结束时间
@@ -249,7 +249,7 @@ pub struct UserReq {
     pub status: Option<i8>,
 }
 
-impl UserReq {
+impl SysUserReq {
     pub fn new_page_req(&self) -> PageRequest {
         if let Some(page) = &self.page {
             PageRequest::new_option(&page.page_no, &page.page_size)

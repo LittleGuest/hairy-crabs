@@ -1,5 +1,5 @@
 use crab_common::result::Res;
-use crab_model::{ConfigReq, SysConfig};
+use crab_model::{SysConfig, SysConfigReq};
 use crab_service::SRV;
 use poem::{handler, web::Json, IntoResponse};
 
@@ -9,12 +9,12 @@ pub async fn list() -> impl IntoResponse {
 }
 
 #[handler]
-pub async fn page(Json(req): Json<ConfigReq>) -> impl IntoResponse {
+pub async fn page(Json(req): Json<SysConfigReq>) -> impl IntoResponse {
     Res::from(SRV.config.page(req).await)
 }
 
 #[handler]
-pub async fn get_by_id(Json(req): Json<ConfigReq>) -> impl IntoResponse {
+pub async fn get_by_id(Json(req): Json<SysConfigReq>) -> impl IntoResponse {
     Res::from(SRV.config.get_by_id(req).await)
 }
 
@@ -29,7 +29,7 @@ pub async fn update(Json(req): Json<SysConfig>) -> impl IntoResponse {
 }
 
 #[handler]
-pub async fn delete(Json(req): Json<ConfigReq>) -> impl IntoResponse {
+pub async fn delete(Json(req): Json<SysConfigReq>) -> impl IntoResponse {
     Res::from(SRV.config.delete(req).await)
 }
 

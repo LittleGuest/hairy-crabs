@@ -1,5 +1,5 @@
 use crab_common::result::Res;
-use crab_model::{DictTypeReq, SysDictType};
+use crab_model::{SysDictType, SysDictTypeReq};
 use crab_service::SRV;
 use poem::{handler, web::Json, IntoResponse};
 
@@ -9,12 +9,12 @@ pub async fn list() -> impl IntoResponse {
 }
 
 #[handler]
-pub async fn page(Json(req): Json<DictTypeReq>) -> impl IntoResponse {
+pub async fn page(Json(req): Json<SysDictTypeReq>) -> impl IntoResponse {
     Res::from(SRV.dict_type.page(req).await)
 }
 
 #[handler]
-pub async fn get_by_id(Json(req): Json<DictTypeReq>) -> impl IntoResponse {
+pub async fn get_by_id(Json(req): Json<SysDictTypeReq>) -> impl IntoResponse {
     Res::from(SRV.dict_type.get_by_id(req).await)
 }
 
@@ -29,7 +29,7 @@ pub async fn update(Json(req): Json<SysDictType>) -> impl IntoResponse {
 }
 
 #[handler]
-pub async fn delete(Json(req): Json<DictTypeReq>) -> impl IntoResponse {
+pub async fn delete(Json(req): Json<SysDictTypeReq>) -> impl IntoResponse {
     Res::from(SRV.dict_type.delete(req).await)
 }
 

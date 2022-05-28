@@ -1,3 +1,5 @@
+//! 登录验证
+
 use std::collections::HashSet;
 
 use crab_cache::{ConfigUtil, RedisCache};
@@ -8,7 +10,8 @@ use crab_lib::{
     validator::Validate,
 };
 use crab_model::{
-    Mapper, ResetPwdReq, SysLoginLog, SysMenu, SysMenuTreeDto, SysUser, UserInfoDto, UserReq,
+    Mapper, ResetPwdReq, SysLoginLog, SysMenu, SysMenuTreeDto, SysUser, SysUserReq, SysUserRole,
+    UserInfoDto,
 };
 use crab_util::password_encoder::PasswordEncoder;
 
@@ -159,7 +162,7 @@ impl SysLoginSrv {
 pub struct UserSrv;
 
 impl UserSrv {
-    pub async fn page(&self, req: UserReq) -> CrabResult<Page<SysUser>> {
+    pub async fn page(&self, req: SysUserReq) -> CrabResult<Page<SysUser>> {
         let mut page = SysUser::page(&req).await?;
         page.records.iter_mut().for_each(|u| u.password = None);
         Ok(page)
@@ -209,6 +212,26 @@ impl UserSrv {
         if let Some(user) = SysUser::fetch_by_id(req.id).await? {
             // TODO 密码加密校验
             SysUser::reset_pwd(&user.account.unwrap_or("".to_string()), &req.password).await
+        } else {
+            Ok(0)
+        }
+    }
+}
+
+pub struct UserRoleSrv;
+
+impl UserRoleSrv {
+    pub async fn save_batch(&self, urs: &[SysUserRole]) -> CrabResult<u64> {
+        SysUserRole::save_batch(urs).await
+    }
+
+    pub async fn delete(&self, ur: SysUserRole) -> CrabResult<u64> {
+        if ur.user_id.is_some() && ur.role_id.is_some() {
+            ur.remove_by_user_role().await
+        } else if let Some(uid) = ur.user_id {
+            SysUserRole::remove_by_user_id(uid).await
+        } else if let Some(rid) = ur.role_id {
+            SysUserRole::remove_by_role_id(rid).await
         } else {
             Ok(0)
         }

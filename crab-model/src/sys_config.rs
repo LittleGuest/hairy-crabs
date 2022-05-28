@@ -124,7 +124,7 @@ impl Mapper for SysConfig {
 }
 
 impl SysConfig {
-    pub async fn page(req: &ConfigReq) -> CrabResult<Page<Self>> {
+    pub async fn page(req: &SysConfigReq) -> CrabResult<Page<Self>> {
         let mut sql = String::new();
         sql.push_str(
             format!(
@@ -158,7 +158,7 @@ impl SysConfig {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct ConfigReq {
+pub struct SysConfigReq {
     /// 开始时间
     pub start_at: Option<u64>,
     /// 结束时间
@@ -176,7 +176,7 @@ pub struct ConfigReq {
     pub config_type: Option<i8>,
 }
 
-impl ConfigReq {
+impl SysConfigReq {
     pub fn new_page_req(&self) -> PageRequest {
         if let Some(page) = &self.page {
             PageRequest::new_option(&page.page_no, &page.page_size)

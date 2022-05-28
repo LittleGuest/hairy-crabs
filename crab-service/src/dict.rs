@@ -1,6 +1,6 @@
 use crab_common::{error::CrabError, result::CrabResult};
 use crab_lib::{log, rbatis::Page, validator::Validate};
-use crab_model::{DictDataReq, DictTypeReq, Mapper, SysDictData, SysDictType};
+use crab_model::{Mapper, SysDictData, SysDictDataReq, SysDictType, SysDictTypeReq};
 
 pub struct DictTypeSrv;
 
@@ -9,11 +9,11 @@ impl DictTypeSrv {
         SysDictType::list().await
     }
 
-    pub async fn page(&self, req: DictTypeReq) -> CrabResult<Page<SysDictType>> {
+    pub async fn page(&self, req: SysDictTypeReq) -> CrabResult<Page<SysDictType>> {
         SysDictType::page(&req).await
     }
 
-    pub async fn get_by_id(&self, req: DictTypeReq) -> CrabResult<Option<SysDictType>> {
+    pub async fn get_by_id(&self, req: SysDictTypeReq) -> CrabResult<Option<SysDictType>> {
         if let Some(id) = req.id {
             SysDictType::fetch_by_id(id).await
         } else {
@@ -39,7 +39,7 @@ impl DictTypeSrv {
         Ok(req)
     }
 
-    pub async fn delete(&self, req: DictTypeReq) -> CrabResult<u64> {
+    pub async fn delete(&self, req: SysDictTypeReq) -> CrabResult<u64> {
         if let Some(uid) = req.id {
             // TODO 不删除有子的类型
             SysDictType::remove_by_id(uid).await
@@ -66,11 +66,11 @@ impl DictDataSrv {
         SysDictData::list().await
     }
 
-    pub async fn page(&self, req: DictDataReq) -> CrabResult<Page<SysDictData>> {
+    pub async fn page(&self, req: SysDictDataReq) -> CrabResult<Page<SysDictData>> {
         SysDictData::page(&req).await
     }
 
-    pub async fn get_by_id(&self, req: DictDataReq) -> CrabResult<Option<SysDictData>> {
+    pub async fn get_by_id(&self, req: SysDictDataReq) -> CrabResult<Option<SysDictData>> {
         if let Some(id) = req.id {
             SysDictData::fetch_by_id(id).await
         } else {
@@ -96,7 +96,7 @@ impl DictDataSrv {
         Ok(req)
     }
 
-    pub async fn delete(&self, req: DictDataReq) -> CrabResult<u64> {
+    pub async fn delete(&self, req: SysDictDataReq) -> CrabResult<u64> {
         if let Some(uid) = req.id {
             SysDictData::remove_by_id(uid).await
         } else {
@@ -113,7 +113,7 @@ impl DictDataSrv {
         todo!()
     }
 
-    pub async fn get_by_type(&self, req: DictDataReq) -> CrabResult<Vec<SysDictData>> {
+    pub async fn get_by_type(&self, req: SysDictDataReq) -> CrabResult<Vec<SysDictData>> {
         let datas = self.list().await?;
         Ok(datas
             .into_iter()

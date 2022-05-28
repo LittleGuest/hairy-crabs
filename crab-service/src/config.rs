@@ -1,6 +1,6 @@
 use crab_common::{error::CrabError, result::CrabResult};
 use crab_lib::{log, rbatis::Page, validator::Validate};
-use crab_model::{ConfigReq, Mapper, SysConfig};
+use crab_model::{Mapper, SysConfig, SysConfigReq};
 
 pub struct ConfigSrv;
 
@@ -9,11 +9,11 @@ impl ConfigSrv {
         SysConfig::list().await
     }
 
-    pub async fn page(&self, req: ConfigReq) -> CrabResult<Page<SysConfig>> {
+    pub async fn page(&self, req: SysConfigReq) -> CrabResult<Page<SysConfig>> {
         SysConfig::page(&req).await
     }
 
-    pub async fn get_by_id(&self, req: ConfigReq) -> CrabResult<Option<SysConfig>> {
+    pub async fn get_by_id(&self, req: SysConfigReq) -> CrabResult<Option<SysConfig>> {
         if let Some(id) = req.id {
             SysConfig::fetch_by_id(id).await
         } else {
@@ -39,7 +39,7 @@ impl ConfigSrv {
         Ok(req)
     }
 
-    pub async fn delete(&self, req: ConfigReq) -> CrabResult<u64> {
+    pub async fn delete(&self, req: SysConfigReq) -> CrabResult<u64> {
         if let Some(uid) = req.id {
             SysConfig::remove_by_id(uid).await
         } else {

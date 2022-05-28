@@ -1,5 +1,8 @@
-use crab_common::{error::CrabError, result::CrabResult};
-use rbatis::{crud::CRUD, crud_table};
+use crab_common::{error::CrabError, result::CrabResult, PageDto};
+use rbatis::{
+    crud::{CRUDTable, CRUD},
+    crud_table, Page, PageRequest,
+};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -123,4 +126,115 @@ impl Mapper for SysLoginLog {
     }
 }
 
-impl SysLoginLog {}
+impl SysLoginLog {
+    pub async fn page(req: &SysLoginLogReq) -> CrabResult<Page<Self>> {
+        let mut sql = String::new();
+        sql.push_str(
+            format!(
+                " select {} from {} where 1 = 1 ",
+                Self::table_columns(),
+                Self::table_name()
+            )
+            .as_str(),
+        );
+
+        if let Some(id) = &req.id {
+            sql.push_str(&format!(" and {} = {} ", "id", id));
+        }
+
+        if let Some(account) = &req.account {
+            sql.push_str(&format!(" and {} like '%{}%' ", "account", account));
+        }
+
+        if let Some(ip) = &req.ip {
+            sql.push_str(&format!(" and {} like '%{}%' ", "ip", ip));
+        }
+
+        if let Some(login_location) = &req.login_location {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "login_location", login_location
+            ));
+        }
+
+        if let Some(browser) = &req.browser {
+            sql.push_str(&format!(" and {} like '%{}%' ", "browser", browser));
+        }
+
+        if let Some(os) = &req.os {
+            sql.push_str(&format!(" and {} like '%{}%' ", "os", os));
+        }
+
+        if let Some(status) = &req.status {
+            sql.push_str(&format!(" and {} = {} ", "status", status));
+        }
+
+        if let Some(msg) = &req.msg {
+            sql.push_str(&format!(" and {} like '%{}%' ", "msg", msg));
+        }
+
+        if let Some(login_at) = &req.login_at {
+            sql.push_str(&format!(" and {} = {} ", "login_at", login_at));
+        }
+
+        if let Some(remark) = &req.remark {
+            sql.push_str(&format!(" and {} like '%{}%' ", "remark", remark));
+        }
+
+        if let Some(del_flag) = &req.del_flag {
+            sql.push_str(&format!(" and {} = {} ", "del_flag", del_flag));
+        }
+
+        let res = RB
+            .fetch_page(&sql, vec![], &req.new_page_req())
+            .await
+            .map_err(|e| {
+                log::error!("page error {}", e);
+                CrabError::SqlError
+            })?;
+        Ok(res)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SysLoginLogReq {
+    /// 开始时间
+    pub start_at: Option<u64>,
+    /// 结束时间
+    pub end_at: Option<u64>,
+    /// 分页参数
+    pub page: Option<PageDto>,
+
+    /// ID
+    pub id: Option<i64>,
+    /// 用户账号
+    pub account: Option<String>,
+    /// 登录IP地址
+    pub ip: Option<String>,
+    /// 登录地点
+    pub login_location: Option<String>,
+    /// 浏览器类型
+    pub browser: Option<String>,
+    /// 操作系统
+    pub os: Option<String>,
+    /// 登录状态（0成功 1失败）
+    pub status: Option<i8>,
+    /// 提示消息
+    pub msg: Option<String>,
+    /// 访问时间
+    pub login_at: Option<rbatis::DateTimeNative>,
+    /// 备注
+    pub remark: Option<String>,
+    /// 删除标志（0代表存在 1代表删除）
+    pub del_flag: Option<i8>,
+}
+
+impl SysLoginLogReq {
+    pub fn new_page_req(&self) -> PageRequest {
+        if let Some(page) = &self.page {
+            PageRequest::new_option(&page.page_no, &page.page_size)
+        } else {
+            PageRequest::default()
+        }
+    }
+}

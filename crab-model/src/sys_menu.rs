@@ -160,7 +160,7 @@ impl Mapper for SysMenu {
 }
 
 impl SysMenu {
-    pub async fn page(req: &MenuReq) -> CrabResult<Page<Self>> {
+    pub async fn page(req: &SysMenuReq) -> CrabResult<Page<Self>> {
         let mut sql = String::new();
         sql.push_str(
             format!(
@@ -359,7 +359,7 @@ impl SysMenu {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct MenuReq {
+pub struct SysMenuReq {
     /// 开始时间
     pub start_at: Option<u64>,
     /// 结束时间
@@ -407,7 +407,7 @@ pub struct MenuReq {
     pub tree_leaf: Option<i8>,
 }
 
-impl MenuReq {
+impl SysMenuReq {
     pub fn new_page_req(&self) -> PageRequest {
         if let Some(page) = &self.page {
             PageRequest::new_option(&page.page_no, &page.page_size)

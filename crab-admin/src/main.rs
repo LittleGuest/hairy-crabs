@@ -1,4 +1,4 @@
-use crab_admin::{config, dict_data, dict_type, menu, middleware, tool_gen, user};
+use crab_admin::{config, dict_data, dict_type, menu, middleware, role, tool_gen, user, user_role};
 use crab_config::APP;
 use crab_lib::anyhow;
 use poem::{listener::TcpListener, post, EndpointExt, Route, Server};
@@ -63,6 +63,19 @@ async fn main() -> anyhow::Result<()> {
         .at("/api/menu/deleteBatch", post(menu::delete_batch))
         .at("/api/menu/refreshCache", post(menu::refresh_cache))
         .at("/api/menu/export", post(menu::export))
+        // 角色管理
+        .at("/api/role/list", post(role::list))
+        .at("/api/role/page", post(role::page))
+        .at("/api/role/getById", post(role::get_by_id))
+        .at("/api/role/save", post(role::save))
+        .at("/api/role/update", post(role::update))
+        .at("/api/role/delete", post(role::delete))
+        .at("/api/role/deleteBatch", post(role::delete_batch))
+        .at("/api/role/refreshCache", post(role::refresh_cache))
+        .at("/api/role/export", post(role::export))
+        // 用户角色
+        .at("/api/userRole/saveBatch", post(user_role::save_batch))
+        .at("/api/userRole/delete", post(user_role::delete))
         //
         .at("/api/tool/gen/list", post(tool_gen::gen_list))
         .around(middleware::auth_middleware)

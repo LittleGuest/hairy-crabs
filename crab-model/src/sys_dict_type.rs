@@ -121,7 +121,7 @@ impl Mapper for SysDictType {
 }
 
 impl SysDictType {
-    pub async fn page(req: &DictTypeReq) -> CrabResult<Page<Self>> {
+    pub async fn page(req: &SysDictTypeReq) -> CrabResult<Page<Self>> {
         let mut sql = String::new();
         sql.push_str(
             format!(
@@ -160,7 +160,7 @@ impl SysDictType {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct DictTypeReq {
+pub struct SysDictTypeReq {
     /// 开始时间
     pub start_at: Option<u64>,
     /// 结束时间
@@ -178,7 +178,7 @@ pub struct DictTypeReq {
     pub status: Option<i8>,
 }
 
-impl DictTypeReq {
+impl SysDictTypeReq {
     pub fn new_page_req(&self) -> PageRequest {
         if let Some(page) = &self.page {
             PageRequest::new_option(&page.page_no, &page.page_size)

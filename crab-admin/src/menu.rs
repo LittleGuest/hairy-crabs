@@ -1,5 +1,5 @@
 use crab_common::result::Res;
-use crab_model::{MenuReq, SysMenu};
+use crab_model::{SysMenu, SysMenuReq};
 use crab_service::SRV;
 use poem::{handler, web::Json, IntoResponse};
 
@@ -9,12 +9,12 @@ pub async fn list() -> impl IntoResponse {
 }
 
 #[handler]
-pub async fn page(Json(req): Json<MenuReq>) -> impl IntoResponse {
+pub async fn page(Json(req): Json<SysMenuReq>) -> impl IntoResponse {
     Res::from(SRV.menu.page(req).await)
 }
 
 #[handler]
-pub async fn get_by_id(Json(req): Json<MenuReq>) -> impl IntoResponse {
+pub async fn get_by_id(Json(req): Json<SysMenuReq>) -> impl IntoResponse {
     Res::from(SRV.menu.get_by_id(req).await)
 }
 
@@ -29,7 +29,7 @@ pub async fn update(Json(req): Json<SysMenu>) -> impl IntoResponse {
 }
 
 #[handler]
-pub async fn delete(Json(req): Json<MenuReq>) -> impl IntoResponse {
+pub async fn delete(Json(req): Json<SysMenuReq>) -> impl IntoResponse {
     Res::from(SRV.menu.delete(req).await)
 }
 

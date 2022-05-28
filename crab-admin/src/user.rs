@@ -1,5 +1,5 @@
 use crab_common::{jwt::TokenData, result::Res};
-use crab_model::{LoginBody, ResetPwdReq, SysUser, UserReq};
+use crab_model::{LoginBody, ResetPwdReq, SysUser, SysUserReq};
 use crab_service::SRV;
 use poem::{
     handler,
@@ -30,7 +30,7 @@ pub async fn routers(Data(token): Data<&TokenData>) -> impl IntoResponse {
 }
 
 #[handler]
-pub async fn page(Json(req): Json<UserReq>) -> impl IntoResponse {
+pub async fn page(Json(req): Json<SysUserReq>) -> impl IntoResponse {
     Res::from(SRV.user.page(req).await)
 }
 

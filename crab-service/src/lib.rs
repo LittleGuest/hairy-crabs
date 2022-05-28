@@ -4,12 +4,14 @@ use config::ConfigSrv;
 use crab_lib::lazy_static::lazy_static;
 use dict::{DictDataSrv, DictTypeSrv};
 use menu::MenuSrv;
+use role::RoleSrv;
 use tool_gen::GenSrv;
-use user::{SysLoginSrv, UserSrv};
+use user::{SysLoginSrv, UserRoleSrv, UserSrv};
 
 mod config;
 mod dict;
 mod menu;
+mod role;
 mod tool_gen;
 mod user;
 
@@ -22,6 +24,8 @@ pub struct Service {
     pub dict_type: DictTypeSrv,
     pub dict_data: DictDataSrv,
     pub menu: MenuSrv,
+    pub role: RoleSrv,
+    pub user_role: UserRoleSrv,
 }
 
 impl Service {
@@ -34,6 +38,8 @@ impl Service {
             dict_type: DictTypeSrv,
             dict_data: DictDataSrv,
             menu: MenuSrv,
+            role: RoleSrv,
+            user_role: UserRoleSrv,
         }
     }
 }

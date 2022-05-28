@@ -8,37 +8,28 @@ use validator::Validate;
 
 use crate::{Mapper, RB};
 
-/// 字典数据表
+/// 角色信息表
 #[crud_table]
 #[derive(
     Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Validate,
 )]
 #[serde(rename_all(serialize = "camelCase"))]
-pub struct SysDictData {
+pub struct SysRole {
     /// ID
     pub id: Option<i64>,
-    /// 字典类型
+    /// 角色名称
+    #[validate(length(max = 30))]
+    pub role_name: Option<String>,
+    /// 角色权限字符串
     #[validate(length(max = 100))]
-    pub dict_type: Option<String>,
-    /// 字典编码
-    pub code: Option<i64>,
-    /// 字典标签
-    #[validate(length(max = 100))]
-    pub label: Option<String>,
-    /// 字典键值
-    #[validate(length(max = 100))]
-    pub value: Option<String>,
-    /// 是否默认（1是 0否）
-    pub is_default: Option<i8>,
-    /// 字典排序
-    pub sort: Option<i16>,
-    /// 样式属性（其他样式扩展）
-    #[validate(length(max = 100))]
-    pub css_class: Option<String>,
-    /// 表格回显样式
-    #[validate(length(max = 100))]
-    pub table_class: Option<String>,
-    /// 状态（0正常 1停用）
+    pub role_key: Option<String>,
+    /// 显示顺序
+    pub sort: Option<i32>,
+    /// 数据范围（1：全部数据权限 2：自定数据权限 ）
+    pub data_scope: Option<i8>,
+    /// 菜单树选择项是否关联显示
+    pub menu_check_strictly: Option<i8>,
+    /// 角色状态（0正常 1停用）
     pub status: Option<i8>,
     /// 备注
     #[validate(length(max = 500))]
@@ -55,14 +46,14 @@ pub struct SysDictData {
     pub del_flag: Option<i8>,
 }
 
-impl std::fmt::Display for SysDictData {
+impl std::fmt::Display for SysRole {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "{}", serde_json::json!(self))
     }
 }
 
 #[crab_lib::async_trait::async_trait]
-impl Mapper for SysDictData {
+impl Mapper for SysRole {
     async fn save(&self) -> CrabResult<Option<i64>> {
         let res = RB.save(self, &[]).await.map_err(|e| {
             log::error!("Mapper::save error {}", e);
@@ -135,8 +126,8 @@ impl Mapper for SysDictData {
     }
 }
 
-impl SysDictData {
-    pub async fn page(req: &SysDictDataReq) -> CrabResult<Page<Self>> {
+impl SysRole {
+    pub async fn page(req: &SysRoleReq) -> CrabResult<Page<Self>> {
         let mut sql = String::new();
         sql.push_str(
             format!(
@@ -151,36 +142,27 @@ impl SysDictData {
             sql.push_str(&format!(" and {} = {} ", "id", id));
         }
 
-        if let Some(dict_type) = &req.dict_type {
-            sql.push_str(&format!(" and {} like '%{}%' ", "dict_type", dict_type));
+        if let Some(role_name) = &req.role_name {
+            sql.push_str(&format!(" and {} like '%{}%' ", "role_name", role_name));
         }
 
-        if let Some(code) = &req.code {
-            sql.push_str(&format!(" and {} = {} ", "code", code));
-        }
-
-        if let Some(label) = &req.label {
-            sql.push_str(&format!(" and {} like '%{}%' ", "label", label));
-        }
-
-        if let Some(value) = &req.value {
-            sql.push_str(&format!(" and {} like '%{}%' ", "value", value));
-        }
-
-        if let Some(is_default) = &req.is_default {
-            sql.push_str(&format!(" and {} = {} ", "is_default", is_default));
+        if let Some(role_key) = &req.role_key {
+            sql.push_str(&format!(" and {} like '%{}%' ", "role_key", role_key));
         }
 
         if let Some(sort) = &req.sort {
             sql.push_str(&format!(" and {} = {} ", "sort", sort));
         }
 
-        if let Some(css_class) = &req.css_class {
-            sql.push_str(&format!(" and {} like '%{}%' ", "css_class", css_class));
+        if let Some(data_scope) = &req.data_scope {
+            sql.push_str(&format!(" and {} = {} ", "data_scope", data_scope));
         }
 
-        if let Some(table_class) = &req.table_class {
-            sql.push_str(&format!(" and {} like '%{}%' ", "table_class", table_class));
+        if let Some(menu_check_strictly) = &req.menu_check_strictly {
+            sql.push_str(&format!(
+                " and {} = {} ",
+                "menu_check_strictly", menu_check_strictly
+            ));
         }
 
         if let Some(status) = &req.status {
@@ -223,7 +205,7 @@ impl SysDictData {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct SysDictDataReq {
+pub struct SysRoleReq {
     /// 开始时间
     pub start_at: Option<u64>,
     /// 结束时间
@@ -233,23 +215,17 @@ pub struct SysDictDataReq {
 
     /// ID
     pub id: Option<i64>,
-    /// 字典类型
-    pub dict_type: Option<String>,
-    /// 字典编码
-    pub code: Option<i64>,
-    /// 字典标签
-    pub label: Option<String>,
-    /// 字典键值
-    pub value: Option<String>,
-    /// 是否默认（1是 0否）
-    pub is_default: Option<i8>,
-    /// 字典排序
-    pub sort: Option<i16>,
-    /// 样式属性（其他样式扩展）
-    pub css_class: Option<String>,
-    /// 表格回显样式
-    pub table_class: Option<String>,
-    /// 状态（0正常 1停用）
+    /// 角色名称
+    pub role_name: Option<String>,
+    /// 角色权限字符串
+    pub role_key: Option<String>,
+    /// 显示顺序
+    pub sort: Option<i32>,
+    /// 数据范围（1：全部数据权限 2：自定数据权限 ）
+    pub data_scope: Option<i8>,
+    /// 菜单树选择项是否关联显示
+    pub menu_check_strictly: Option<i8>,
+    /// 角色状态（0正常 1停用）
     pub status: Option<i8>,
     /// 备注
     pub remark: Option<String>,
@@ -265,7 +241,7 @@ pub struct SysDictDataReq {
     pub del_flag: Option<i8>,
 }
 
-impl SysDictDataReq {
+impl SysRoleReq {
     pub fn new_page_req(&self) -> PageRequest {
         if let Some(page) = &self.page {
             PageRequest::new_option(&page.page_no, &page.page_size)
