@@ -1,5 +1,8 @@
-use crab_common::{error::CrabError, result::CrabResult};
-use rbatis::{crud::CRUD, crud_table};
+use crab_common::{error::CrabError, result::CrabResult, PageDto};
+use rbatis::{
+    crud::{CRUDTable, CRUD},
+    crud_table, Page, PageRequest,
+};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -12,7 +15,7 @@ use crate::{Mapper, RB};
 )]
 #[serde(rename_all(serialize = "camelCase"))]
 pub struct GenConfigTemplate {
-    ///
+    /// ID
     pub id: Option<i64>,
     /// 模板名称
     #[validate(length(max = 50))]
@@ -137,4 +140,70 @@ impl Mapper for GenConfigTemplate {
     }
 }
 
-impl GenConfigTemplate {}
+impl GenConfigTemplate {
+    pub async fn page(req: &GenConfigTemplateReq) -> CrabResult<Page<Self>> {
+        let mut sql = String::new();
+        sql.push_str(
+            format!(
+                " select {} from {} where 1 = 1 ",
+                Self::table_columns(),
+                Self::table_name()
+            )
+            .as_str(),
+        );
+
+        if let Some(id) = &req.id {
+            sql.push_str(&format!(" and {} = {} ", "id", id));
+        }
+
+        if let Some(template_name) = &req.template_name {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "template_name", template_name
+            ));
+        }
+
+        if let Some(function_author) = &req.function_author {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "function_author", function_author
+            ));
+        }
+
+        let res = RB
+            .fetch_page(&sql, vec![], &req.new_page_req())
+            .await
+            .map_err(|e| {
+                log::error!("page error {}", e);
+                CrabError::SqlError
+            })?;
+        Ok(res)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GenConfigTemplateReq {
+    /// 开始时间
+    pub start_at: Option<u64>,
+    /// 结束时间
+    pub end_at: Option<u64>,
+    /// 分页参数
+    pub page: Option<PageDto>,
+
+    /// ID
+    pub id: Option<i64>,
+    /// 模板名称
+    pub template_name: Option<String>,
+    /// 作者
+    pub function_author: Option<String>,
+}
+
+impl GenConfigTemplateReq {
+    pub fn new_page_req(&self) -> PageRequest {
+        if let Some(page) = &self.page {
+            PageRequest::new_option(&page.page_no, &page.page_size)
+        } else {
+            PageRequest::default()
+        }
+    }
+}

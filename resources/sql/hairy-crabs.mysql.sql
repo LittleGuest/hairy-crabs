@@ -1,7 +1,8 @@
-CREATE DATABASE `hairy-crab` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-
+CREATE DATABASE `hairy-crab`
+/*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */
+/*!80016 DEFAULT ENCRYPTION='N' */
+;
 -- `hairy-crab`.gen_config_template definition
-
 CREATE TABLE `gen_config_template` (
   `id` bigint NOT NULL COMMENT 'ID',
   `template_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '模板名称',
@@ -21,11 +22,8 @@ CREATE TABLE `gen_config_template` (
   `update_at` datetime DEFAULT NULL COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='模板配置表';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '模板配置表';
 -- `hairy-crab`.gen_table definition
-
 CREATE TABLE `gen_table` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '编号',
   `table_name` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '表名称',
@@ -50,11 +48,8 @@ CREATE TABLE `gen_table` (
   `update_by` bigint DEFAULT NULL COMMENT '更新者',
   `update_at` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='代码生成业务表';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '代码生成业务表';
 -- `hairy-crab`.gen_table_column definition
-
 CREATE TABLE `gen_table_column` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '编号',
   `table_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '归属表编号',
@@ -86,11 +81,8 @@ CREATE TABLE `gen_table_column` (
   `update_by` bigint DEFAULT NULL COMMENT '更新者',
   `update_at` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='代码生成业务表字段';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '代码生成业务表字段';
 -- `hairy-crab`.sys_config definition
-
 CREATE TABLE `sys_config` (
   `id` bigint NOT NULL COMMENT 'ID',
   `config_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '参数名称',
@@ -104,11 +96,8 @@ CREATE TABLE `sys_config` (
   `update_at` datetime DEFAULT NULL COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='参数配置表';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '参数配置表';
 -- `hairy-crab`.sys_dict_data definition
-
 CREATE TABLE `sys_dict_data` (
   `id` bigint NOT NULL COMMENT 'ID',
   `dict_type` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '字典类型',
@@ -128,11 +117,8 @@ CREATE TABLE `sys_dict_data` (
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
   PRIMARY KEY (`id`),
   KEY `dict_data_idx` (`dict_type`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='字典数据表';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '字典数据表';
 -- `hairy-crab`.sys_dict_type definition
-
 CREATE TABLE `sys_dict_type` (
   `id` bigint NOT NULL COMMENT 'ID',
   `name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '字典名称',
@@ -146,11 +132,8 @@ CREATE TABLE `sys_dict_type` (
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
   PRIMARY KEY (`id`),
   UNIQUE KEY `dict_type` (`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='字典类型表';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '字典类型表';
 -- `hairy-crab`.sys_log definition
-
 CREATE TABLE `sys_log` (
   `id` bigint NOT NULL COMMENT 'ID',
   `title` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '模块标题',
@@ -176,11 +159,8 @@ CREATE TABLE `sys_log` (
   `update_at` datetime DEFAULT NULL COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='操作日志记录';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '操作日志记录';
 -- `hairy-crab`.sys_login_log definition
-
 CREATE TABLE `sys_login_log` (
   `id` bigint NOT NULL COMMENT 'ID',
   `account` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '用户账号',
@@ -194,11 +174,8 @@ CREATE TABLE `sys_login_log` (
   `remark` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '备注',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='系统访问记录';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '系统访问记录';
 -- `hairy-crab`.sys_menu definition
-
 CREATE TABLE `sys_menu` (
   `id` bigint NOT NULL COMMENT 'ID',
   `menu_code` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '菜单编码',
@@ -226,11 +203,25 @@ CREATE TABLE `sys_menu` (
   `update_at` datetime DEFAULT NULL COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='菜单信息表';
-
-
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '菜单信息表';
+-- `hairy-crab`.sys_role definition
+CREATE TABLE `sys_role` (
+  `id` bigint NOT NULL COMMENT 'ID',
+  `role_name` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '角色名称',
+  `role_key` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '角色权限字符串',
+  `sort` int NOT NULL COMMENT '显示顺序',
+  `data_scope` tinyint DEFAULT '1' COMMENT '数据范围（1：全部数据权限 2：自定数据权限 ）',
+  `menu_check_strictly` tinyint DEFAULT '1' COMMENT '菜单树选择项是否关联显示',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '角色状态（0正常 1停用）',
+  `remark` varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '备注',
+  `create_by` bigint DEFAULT NULL COMMENT '创建者',
+  `create_at` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` bigint DEFAULT NULL COMMENT '更新者',
+  `update_at` datetime DEFAULT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
+  PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '角色信息表';
 -- `hairy-crab`.sys_user definition
-
 CREATE TABLE `sys_user` (
   `id` bigint NOT NULL COMMENT 'ID',
   `no` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '' COMMENT '用户编号',
@@ -251,4 +242,11 @@ CREATE TABLE `sys_user` (
   `update_at` datetime DEFAULT NULL COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标志（0代表存在 1代表删除）',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='用户信息表';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '用户信息表';
+-- `hairy-crab`.sys_user_role definition
+CREATE TABLE `sys_user_role` (
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `role_id` bigint NOT NULL COMMENT '角色ID',
+  PRIMARY KEY (`user_id`, `role_id`),
+  KEY `idx` (`user_id`, `role_id`) USING BTREE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COMMENT = '用户和角色关联表';

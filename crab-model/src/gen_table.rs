@@ -1,5 +1,8 @@
-use crab_common::{error::CrabError, result::CrabResult};
-use rbatis::{crud::CRUD, crud_table, Page, PageRequest};
+use crab_common::{error::CrabError, result::CrabResult, PageDto};
+use rbatis::{
+    crud::{CRUDTable, CRUD},
+    crud_table, Page, PageRequest,
+};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -155,73 +158,180 @@ impl Mapper for GenTable {
 }
 
 impl GenTable {
-    /// 查询业务列表
-    pub async fn gen_table_list(
-        GenTableDto {
-            page_num,
-            page_size,
-            table_name,
-            table_comment,
-            ..
-        }: &GenTableDto,
-    ) -> Result<Page<Self>, CrabError> {
-        let mut sql = "
-        select
-            table_id,
-            table_name,
-            table_comment,
-            sub_table_name,
-            sub_table_fk_name,
-            class_name,
-            tpl_category,
-            package_name,
-            module_name,
-            business_name,
-            function_name,
-            function_author,
-            function_author_email,
-            gen_type,
-            options,
-            create_by,
-            create_time,
-            update_by,
-            update_time,
-            remark
-        from
-            gen_table
-        where
-            1 = 1
-        "
-        .to_string();
+    pub async fn page(req: &GenTableReq) -> CrabResult<Page<Self>> {
+        let mut sql = String::new();
+        sql.push_str(
+            format!(
+                " select {} from {} where 1 = 1 ",
+                Self::table_columns(),
+                Self::table_name()
+            )
+            .as_str(),
+        );
 
-        if let Some(tn) = table_name {
-            sql.push_str(
-                format!(" AND lower(table_name) like lower(concat('%', '{tn}', '%')) ").as_str(),
-            );
+        if let Some(id) = &req.id {
+            sql.push_str(&format!(" and {} = {} ", "id", id));
         }
 
-        if let Some(tc) = table_comment {
-            sql.push_str(
-                format!(" AND lower(table_comment) like lower(concat('%', '{tc}', '%')) ").as_str(),
-            );
+        if let Some(table_name) = &req.table_name {
+            sql.push_str(&format!(" and {} like '%{}%' ", "table_name", table_name));
         }
 
-        let page: Result<Page<Self>, CrabError> = RB
-            .fetch_page(&sql, vec![], &PageRequest::new_option(page_num, page_size))
+        if let Some(table_comment) = &req.table_comment {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "table_comment", table_comment
+            ));
+        }
+
+        if let Some(sub_table_name) = &req.sub_table_name {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "sub_table_name", sub_table_name
+            ));
+        }
+
+        if let Some(sub_table_fk_name) = &req.sub_table_fk_name {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "sub_table_fk_name", sub_table_fk_name
+            ));
+        }
+
+        if let Some(class_name) = &req.class_name {
+            sql.push_str(&format!(" and {} like '%{}%' ", "class_name", class_name));
+        }
+
+        if let Some(tpl_category) = &req.tpl_category {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "tpl_category", tpl_category
+            ));
+        }
+
+        if let Some(workspace_path) = &req.workspace_path {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "workspace_path", workspace_path
+            ));
+        }
+
+        if let Some(module_name) = &req.module_name {
+            sql.push_str(&format!(" and {} like '%{}%' ", "module_name", module_name));
+        }
+
+        if let Some(package_name) = &req.package_name {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "package_name", package_name
+            ));
+        }
+
+        if let Some(business_name) = &req.business_name {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "business_name", business_name
+            ));
+        }
+
+        if let Some(function_name) = &req.function_name {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "function_name", function_name
+            ));
+        }
+
+        if let Some(function_author) = &req.function_author {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "function_author", function_author
+            ));
+        }
+
+        if let Some(function_author_email) = &req.function_author_email {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "function_author_email", function_author_email
+            ));
+        }
+
+        if let Some(web_workspace_path) = &req.web_workspace_path {
+            sql.push_str(&format!(
+                " and {} like '%{}%' ",
+                "web_workspace_path", web_workspace_path
+            ));
+        }
+
+        if let Some(gen_type) = &req.gen_type {
+            sql.push_str(&format!(" and {} = {} ", "gen_type", gen_type));
+        }
+
+        if let Some(options) = &req.options {
+            sql.push_str(&format!(" and {} like '%{}%' ", "options", options));
+        }
+
+        let res = RB
+            .fetch_page(&sql, vec![], &req.new_page_req())
             .await
             .map_err(|e| {
-                log::error!("查询业务列表: {}", e);
-                CrabError::ServerError("查询业务列表")
-            });
-        page
+                log::error!("page error {}", e);
+                CrabError::SqlError
+            })?;
+        Ok(res)
     }
 }
 
-#[derive(Deserialize)]
-pub struct GenTableDto {
-    pub page_num: Option<u64>,
-    pub page_size: Option<u64>,
+#[derive(Serialize, Deserialize)]
+pub struct GenTableReq {
+    /// 开始时间
+    pub start_at: Option<u64>,
+    /// 结束时间
+    pub end_at: Option<u64>,
+    /// 分页参数
+    pub page: Option<PageDto>,
+
+    /// 编号
+    pub id: Option<i64>,
+    /// 表名称
     pub table_name: Option<String>,
+    /// 表描述
     pub table_comment: Option<String>,
+    /// 关联子表的表名
+    pub sub_table_name: Option<String>,
+    /// 子表关联的外键名
+    pub sub_table_fk_name: Option<String>,
+    /// 实体类名称
+    pub class_name: Option<String>,
+    /// 使用的模板（crud单表操作 tree树表操作）
+    pub tpl_category: Option<String>,
+    /// 工作空间
+    pub workspace_path: Option<String>,
+    /// 模块名
+    pub module_name: Option<String>,
+    /// 包路径
+    pub package_name: Option<String>,
+    /// 业务名
+    pub business_name: Option<String>,
+    /// 功能名
+    pub function_name: Option<String>,
+    /// 作者
     pub function_author: Option<String>,
+    /// 邮箱
+    pub function_author_email: Option<String>,
+    /// 前端工作空间路径
+    pub web_workspace_path: Option<String>,
+    /// 生成代码方式（0zip压缩包 1自定义路径）
+    pub gen_type: Option<i8>,
+    /// 扩展选项
+    pub options: Option<String>,
+}
+
+impl GenTableReq {
+    pub fn new_page_req(&self) -> PageRequest {
+        if let Some(page) = &self.page {
+            PageRequest::new_option(&page.page_no, &page.page_size)
+        } else {
+            PageRequest::default()
+        }
+    }
 }

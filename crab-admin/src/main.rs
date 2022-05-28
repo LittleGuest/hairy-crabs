@@ -1,6 +1,6 @@
 use crab_admin::{
-    config, dict_data, dict_type, login_log, menu, middleware, oper_log, role, tool_gen, user,
-    user_role,
+    config, dict_data, dict_type, gen_config_template, gen_table, gen_table_column, login_log,
+    menu, middleware, oper_log, role, user, user_role,
 };
 use crab_config::APP;
 use crab_lib::anyhow;
@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
 
     let route = Route::new()
         .at("/login", post(user::login))
-        //
+        // 用户管理
         .at("/api/user/getInfo", post(user::user_info))
         .at("/api/user/getRouters", post(user::routers))
         .at("/api/user/page", post(user::page))
@@ -87,8 +87,62 @@ async fn main() -> anyhow::Result<()> {
         .at("/api/loginLog/page", post(login_log::page))
         .at("/api/loginLog/getById", post(login_log::get_by_id))
         .at("/api/loginLog/clear", post(login_log::clear))
-        //
-        .at("/api/tool/gen/list", post(tool_gen::gen_list))
+        // 模板配置
+        .at("/api/gen/template/list", post(gen_config_template::list))
+        .at("/api/gen/template/page", post(gen_config_template::page))
+        .at(
+            "/api/gen/template/getById",
+            post(gen_config_template::get_by_id),
+        )
+        .at("/api/gen/template/save", post(gen_config_template::save))
+        .at(
+            "/api/gen/template/update",
+            post(gen_config_template::update),
+        )
+        .at(
+            "/api/gen/template/delete",
+            post(gen_config_template::delete),
+        )
+        .at(
+            "/api/gen/template/deleteBatch",
+            post(gen_config_template::delete_batch),
+        )
+        .at(
+            "/api/gen/template/changeStatus",
+            post(gen_config_template::change_status),
+        )
+        .at(
+            "/api/gen/template/changeTemplateDefault",
+            post(gen_config_template::change_template_default),
+        )
+        // 代码生成
+        .at("/api/gen/table/list", post(gen_table::list))
+        .at("/api/gen/table/page", post(gen_table::page))
+        .at("/api/gen/table/getById", post(gen_table::get_by_id))
+        .at("/api/gen/table/save", post(gen_table::save))
+        .at("/api/gen/table/update", post(gen_table::update))
+        .at("/api/gen/table/delete", post(gen_table::delete))
+        .at("/api/gen/table/deleteBatch", post(gen_table::delete_batch))
+        // 代码生成
+        .at("/api/gen/tableColumn/list", post(gen_table_column::list))
+        .at("/api/gen/tableColumn/page", post(gen_table_column::page))
+        .at(
+            "/api/gen/tableColumn/getById",
+            post(gen_table_column::get_by_id),
+        )
+        .at("/api/gen/tableColumn/save", post(gen_table_column::save))
+        .at(
+            "/api/gen/tableColumn/update",
+            post(gen_table_column::update),
+        )
+        .at(
+            "/api/gen/tableColumn/delete",
+            post(gen_table_column::delete),
+        )
+        .at(
+            "/api/gen/tableColumn/deleteBatch",
+            post(gen_table_column::delete_batch),
+        )
         .around(middleware::auth_middleware)
         .around(middleware::token_middleware)
         .with(middleware::LogMilldeware);
