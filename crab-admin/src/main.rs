@@ -1,4 +1,7 @@
-use crab_admin::{config, dict_data, dict_type, menu, middleware, role, tool_gen, user, user_role};
+use crab_admin::{
+    config, dict_data, dict_type, login_log, menu, middleware, oper_log, role, tool_gen, user,
+    user_role,
+};
 use crab_config::APP;
 use crab_lib::anyhow;
 use poem::{listener::TcpListener, post, EndpointExt, Route, Server};
@@ -76,6 +79,14 @@ async fn main() -> anyhow::Result<()> {
         // 用户角色
         .at("/api/userRole/saveBatch", post(user_role::save_batch))
         .at("/api/userRole/delete", post(user_role::delete))
+        // 操作日志
+        .at("/api/log/page", post(oper_log::page))
+        .at("/api/log/getById", post(oper_log::get_by_id))
+        .at("/api/log/clear", post(oper_log::clear))
+        // 操作日志
+        .at("/api/loginLog/page", post(login_log::page))
+        .at("/api/loginLog/getById", post(login_log::get_by_id))
+        .at("/api/loginLog/clear", post(login_log::clear))
         //
         .at("/api/tool/gen/list", post(tool_gen::gen_list))
         .around(middleware::auth_middleware)

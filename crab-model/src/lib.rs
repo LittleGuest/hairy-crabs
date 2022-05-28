@@ -30,6 +30,8 @@ mod sys_user_role;
 pub use sys_user_role::*;
 mod sys_role;
 pub use sys_role::*;
+mod sys_log;
+pub use sys_log::*;
 
 lazy_static! {
     pub static ref RB: Rbatis = {
