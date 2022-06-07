@@ -209,9 +209,9 @@ pub struct LoginBody {
     /// 密码
     pub password: String,
     /// 验证码
-    pub code: String,
+    pub code: Option<String>,
     /// 唯一标识
-    pub uuid: String,
+    pub uuid: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]

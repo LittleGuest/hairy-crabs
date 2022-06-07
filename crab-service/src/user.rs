@@ -24,13 +24,13 @@ impl SysLoginSrv {
         &self,
         account: String,
         password: String,
-        code: String,
-        uuid: String,
+        code: Option<String>,
+        uuid: Option<String>,
     ) -> CrabResult<String> {
-        // 验证码开关
-        if ConfigUtil::get_config_bool_value_by_key(consts::config::SYS_CAPTCHA_ON_OFF, true) {
-            Self::verify_captcha(&account, &code, &uuid).await?;
-        }
+        // // 验证码开关
+        // if ConfigUtil::get_config_bool_value_by_key(consts::config::SYS_CAPTCHA_ON_OFF, true) {
+        //     Self::verify_captcha(&account, code, uuid).await?;
+        // }
 
         if let Some(user) = SysUser::get_by_username(&account).await? {
             if !PasswordEncoder::verify(
@@ -135,7 +135,18 @@ impl SysLoginSrv {
     }
 
     /// 校验验证码
-    async fn verify_captcha(account: &str, code: &str, uuid: &str) -> CrabResult<()> {
+    async fn verify_captcha(
+        account: &str,
+        code: Option<String>,
+        uuid: Option<String>,
+    ) -> CrabResult<()> {
+        let code = code.unwrap_or("".to_string());
+        let uuid = uuid.unwrap_or("".to_string());
+
+        if code.is_empty() || uuid.is_empty() {
+            return Err(CrabError::CaptchaError);
+        }
+
         let verify_key = format!("{}{}", consts::CAPTCHA_CODE_KEY, uuid);
 
         let mut login_log = SysLoginLog {

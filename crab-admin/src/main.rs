@@ -13,7 +13,7 @@ async fn main() -> anyhow::Result<()> {
     crab_model::init_db().await?;
 
     let route = Route::new()
-        .at("/login", post(user::login))
+        .at("/api/login", post(user::login))
         // 用户管理
         .at("/api/user/getInfo", post(user::user_info))
         .at("/api/user/getRouters", post(user::routers))

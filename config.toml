@@ -11,7 +11,7 @@ log_dir = "target/logs/"
 jwt_secret = "abcdefghijklmnopqrstuvwxyz"
 
 # 白名单
-white_list = ["/login", "/captcha"]
+white_list = ["/api/login", "/api/captcha"]
 
 [server]
 # 服务名称
