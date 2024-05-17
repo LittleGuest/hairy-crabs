@@ -2,9 +2,38 @@ use crab_admin::{
     config, dict_data, dict_type, gen_config_template, gen_table, gen_table_column, login_log,
     menu, middleware, oper_log, role, user, user_role,
 };
+use crab_common::result::{Res, ResBuilder};
 use crab_config::APP;
-use crab_lib::anyhow;
-use poem::{listener::TcpListener, post, EndpointExt, Route, Server};
+use crab_lib::{anyhow, serde_json::json};
+use crab_ui::render;
+use log::log;
+use poem::{
+    handler,
+    http::StatusCode,
+    listener::TcpListener,
+    post,
+    web::{Form, Json},
+    Body, EndpointExt, IntoResponse, Response, ResponseBuilder, Route, Server,
+};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize, Serialize)]
+struct TestBody {
+    keyword: Option<String>,
+}
+
+#[handler]
+fn test(Form(data): Form<TestBody>) -> impl IntoResponse {
+    ResBuilder::new().with_data(json!(data)).build()
+}
+
+#[handler]
+fn index() -> impl IntoResponse {
+    Response::builder()
+        .content_type("text/html")
+        .status(StatusCode::OK)
+        .body(render(json!({})))
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -13,6 +42,8 @@ async fn main() -> anyhow::Result<()> {
     crab_model::init_db().await?;
 
     let route = Route::new()
+        .at("/", index)
+        .at("/test", post(test))
         .at("/api/login", post(user::login))
         // 用户管理
         .at("/api/user/getInfo", post(user::user_info))

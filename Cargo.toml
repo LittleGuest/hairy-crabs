@@ -10,5 +10,6 @@ members = [
     "crab-service",
     "crab-util",
     "crab-lib",
+    "crab-ui",
     "generator",
 ]
